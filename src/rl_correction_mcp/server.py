@@ -50,8 +50,80 @@ from .models import (
     UpdateLogicChainToolInput,
 )
 from .store import TripleChainStore
+from .call_logger import get_call_logger
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================
+# 工具调用记录装饰器
+# ============================================================
+
+def log_tool_call(func):
+    """装饰器：自动记录工具调用日志"""
+    async def wrapper(*args, **kwargs):
+        tool_name = func.__name__
+        call_logger = get_call_logger()
+        
+        # 提取参数
+        params = {}
+        if args and hasattr(args[0], 'model_dump'):
+            params = args[0].model_dump()
+        elif args:
+            params = {'args': str(args)}
+        if kwargs:
+            params.update(kwargs)
+        
+        # 记录开始时间
+        import time
+        start_time = time.time()
+        
+        try:
+            # 执行工具
+            result = await func(*args, **kwargs)
+            
+            # 计算耗时
+            duration_ms = int((time.time() - start_time) * 1000)
+            
+            # 解析结果获取相关修正对ID
+            result_data = None
+            related_id = None
+            try:
+                result_json = json.loads(result)
+                result_data = result_json
+                # 尝试获取创建的记录ID
+                if result_json.get('success') and 'id' in result_json:
+                    related_id = result_json['id']
+            except:
+                pass
+            
+            # 记录成功调用
+            call_logger.log_call(
+                tool_name=tool_name,
+                parameters=params,
+                result_status='success',
+                result_data=result_data,
+                related_correction_id=related_id,
+                duration_ms=duration_ms,
+            )
+            
+            return result
+            
+        except Exception as e:
+            # 计算耗时
+            duration_ms = int((time.time() - start_time) * 1000)
+            
+            # 记录失败调用
+            call_logger.log_call(
+                tool_name=tool_name,
+                parameters=params,
+                result_status='error',
+                error_message=str(e),
+                duration_ms=duration_ms,
+            )
+            raise
+    
+    return wrapper
 
 
 # ============================================================
@@ -208,6 +280,7 @@ async def get_usage_guide() -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_add_correction(params: AddCorrectionToolInput) -> str:
     """添加一条三链修正对：包含输入链（原始输入+场景上下文）、输出链（错误输出+正确输出+质量评分）、逻辑链（错误原因+思维链）。
 
@@ -269,6 +342,7 @@ async def rlc_add_correction(params: AddCorrectionToolInput) -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_add_rule(params: AddRuleToolInput) -> str:
     """添加一条行为规则：定义模型在特定条件下应该或不应该做什么。
 
@@ -327,6 +401,7 @@ async def rlc_add_rule(params: AddRuleToolInput) -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_search(params: SearchToolInput) -> str:
     """RAG 检索相关的修正记录，返回格式化的上下文文本。
 
@@ -414,6 +489,7 @@ async def rlc_search(params: SearchToolInput) -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_list_all(params: ListAllToolInput) -> str:
     """列出所有修正记录，支持分页和多维过滤（类型、优先级、审核状态）。
 
@@ -450,6 +526,7 @@ async def rlc_list_all(params: ListAllToolInput) -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_delete(params: DeleteToolInput) -> str:
     """删除指定的修正记录。
 
@@ -486,6 +563,7 @@ async def rlc_delete(params: DeleteToolInput) -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_get_stats() -> str:
     """获取修正记录的统计信息，包含优先级分布、审核状态分布、平均质量评分等。
 
@@ -516,6 +594,7 @@ async def rlc_get_stats() -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_get_record(params: GetRecordToolInput) -> str:
     """获取单条修正记录的完整三链信息。
 
@@ -552,6 +631,7 @@ async def rlc_get_record(params: GetRecordToolInput) -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_review_record(params: ReviewRecordToolInput) -> str:
     """审核一条修正记录（批准或拒绝）。
 
@@ -596,6 +676,7 @@ async def rlc_review_record(params: ReviewRecordToolInput) -> str:
         "openWorldHint": False,
     },
 )
+@log_tool_call
 async def rlc_update_logic_chain(params: UpdateLogicChainToolInput) -> str:
     """更新修正对的逻辑链（错误原因、正确原因、思维链等）。
 

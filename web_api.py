@@ -19,6 +19,7 @@ import uvicorn
 
 # 导入 MCP 的三链存储层
 from rl_correction_mcp.store import TripleChainStore
+from rl_correction_mcp.call_logger import get_call_logger
 from rl_correction_mcp.models import (
     TripleChainRecord,
     BehaviorRuleRecord,
@@ -113,13 +114,15 @@ app.add_middleware(
 
 # 初始化存储层
 store: Optional[TripleChainStore] = None
+call_logger = None
 
 
 @app.on_event("startup")
 async def startup():
     """启动时初始化存储层"""
-    global store
+    global store, call_logger
     store = TripleChainStore()
+    call_logger = get_call_logger()
     print(f"RL Correction MCP Web API (三链版) 启动，当前记录数: {store.collection.count()}")
 
 
@@ -396,6 +399,40 @@ async def search_records(data: SearchRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"搜索失败: {str(e)}")
+
+
+# ============================================================
+# 调用记录接口
+# ============================================================
+
+@app.get("/api/calls")
+async def list_calls(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    tool_name: Optional[str] = Query(default=None),
+    result_status: Optional[str] = Query(default=None),
+    related_correction_id: Optional[str] = Query(default=None),
+):
+    """列出 MCP 工具调用记录"""
+    if call_logger is None:
+        raise HTTPException(status_code=500, detail="调用记录器未初始化")
+
+    return call_logger.get_calls(
+        limit=limit,
+        offset=offset,
+        tool_name=tool_name,
+        result_status=result_status,
+        related_correction_id=related_correction_id,
+    )
+
+
+@app.get("/api/calls/stats")
+async def get_call_stats():
+    """获取调用统计信息"""
+    if call_logger is None:
+        raise HTTPException(status_code=500, detail="调用记录器未初始化")
+
+    return call_logger.get_stats()
 
 
 # ============================================================

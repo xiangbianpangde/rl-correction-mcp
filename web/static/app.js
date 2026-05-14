@@ -105,6 +105,10 @@ function switchView(viewName) {
   if (viewName === 'dashboard') loadDashboard();
   else if (viewName === 'corrections') loadCorrections();
   else if (viewName === 'rules') loadRules();
+  else if (viewName === 'calls') {
+    loadCalls();
+    loadCallStats();
+  }
 }
 
 // 概览
@@ -697,6 +701,12 @@ function closeDrawer() {
   elements.drawer.classList.add('hidden');
   document.body.style.overflow = '';
   state.currentRecord = null;
+
+  // 恢复编辑和删除按钮显示
+  const editBtn = document.getElementById('drawer-edit');
+  const deleteBtn = document.getElementById('drawer-delete');
+  if (editBtn) editBtn.style.display = '';
+  if (deleteBtn) deleteBtn.style.display = '';
 }
 
 // 模态框 - 三链版表单
@@ -1185,9 +1195,322 @@ function bindEvents() {
   });
 }
 
+// ============================================================
+// 调用记录管理
+// ============================================================
+
+const callState = {
+  page: 0,
+  limit: 50,
+  total: 0,
+  calls: [],
+  filterTool: '',
+  filterStatus: '',
+};
+
+// 加载调用记录
+async function loadCalls() {
+  try {
+    const params = new URLSearchParams({
+      limit: callState.limit,
+      offset: callState.page * callState.limit,
+    });
+    if (callState.filterTool) params.append('tool_name', callState.filterTool);
+    if (callState.filterStatus) params.append('result_status', callState.filterStatus);
+
+    const response = await fetch(`${API_BASE}/api/calls?${params}`);
+    if (!response.ok) throw new Error('加载调用记录失败');
+
+    const data = await response.json();
+    callState.calls = data.calls;
+    callState.total = data.total;
+
+    renderCalls();
+    updateCallPagination();
+  } catch (error) {
+    console.error('加载调用记录失败:', error);
+    showToast('加载调用记录失败: ' + error.message, 'error');
+  }
+}
+
+// 加载调用统计
+async function loadCallStats() {
+  try {
+    const response = await fetch(`${API_BASE}/api/calls/stats`);
+    if (!response.ok) throw new Error('加载调用统计失败');
+
+    const stats = await response.json();
+
+    // 更新统计卡片
+    const statTotal = document.getElementById('stat-call-total');
+    const statSuccess = document.getElementById('stat-call-success');
+    const statError = document.getElementById('stat-call-error');
+    const statToday = document.getElementById('stat-call-today');
+    const callCount = document.getElementById('call-count');
+
+    if (statTotal) statTotal.textContent = stats.total || 0;
+    if (statSuccess) statSuccess.textContent = stats.success || 0;
+    if (statError) statError.textContent = stats.error || 0;
+    if (statToday) statToday.textContent = stats.today || 0;
+    if (callCount) callCount.textContent = stats.total || 0;
+
+    // 更新工具分布
+    const toolStats = document.getElementById('call-tool-stats');
+    if (toolStats && stats.by_tool) {
+      toolStats.innerHTML = Object.entries(stats.by_tool)
+        .map(([tool, count]) => `<span class="tag">${tool}: ${count}</span>`)
+        .join('');
+    }
+  } catch (error) {
+    console.error('加载调用统计失败:', error);
+  }
+}
+
+// 渲染调用记录列表
+function renderCalls() {
+  const container = document.getElementById('calls-list');
+  if (!container) return;
+
+  if (callState.calls.length === 0) {
+    container.innerHTML = '<div class="empty-state">暂无调用记录</div>';
+    return;
+  }
+
+  container.innerHTML = callState.calls.map(call => {
+    const statusIcon = call.result_status === 'success' ? '✅' : '❌';
+    const statusClass = call.result_status === 'success' ? 'success' : 'error';
+    const time = new Date(call.timestamp).toLocaleString('zh-CN');
+    const params = call.parameters ? JSON.stringify(call.parameters).slice(0, 100) + '...' : '无参数';
+
+    return `
+      <article class="record-card clickable" data-call-id="${call.id}">
+        <div class="record-header">
+          <span class="record-type correction">${statusIcon} ${call.tool_name}</span>
+          <span class="priority-badge ${statusClass}">${call.result_status}</span>
+        </div>
+        <p class="record-title">时间: ${time}</p>
+        <p class="record-preview">参数: ${escapeHtml(params)}</p>
+        ${call.related_correction_id ? `<p class="record-preview">关联修正对: ${call.related_correction_id.slice(0, 8)}...</p>` : ''}
+        ${call.duration_ms ? `<span class="quality-score">耗时: ${call.duration_ms}ms</span>` : ''}
+      </article>
+    `;
+  }).join('');
+
+  // 添加点击事件
+  container.querySelectorAll('.record-card.clickable').forEach(card => {
+    card.addEventListener('click', () => {
+      const callId = card.dataset.callId;
+      const call = callState.calls.find(c => c.id === callId);
+      if (call) openCallDrawer(call);
+    });
+  });
+}
+
+// 打开调用详情抽屉
+function openCallDrawer(call) {
+  const statusIcon = call.result_status === 'success' ? '✅' : '❌';
+  const statusClass = call.result_status === 'success' ? 'success' : 'error';
+  const time = new Date(call.timestamp).toLocaleString('zh-CN');
+
+  // 格式化参数
+  let paramsHtml = '<code>无参数</code>';
+  if (call.parameters) {
+    try {
+      paramsHtml = `<pre class="code-block">${escapeHtml(JSON.stringify(call.parameters, null, 2))}</pre>`;
+    } catch (e) {
+      paramsHtml = `<code>${escapeHtml(JSON.stringify(call.parameters))}</code>`;
+    }
+  }
+
+  // 格式化返回结果
+  let resultHtml = '<code>无返回数据</code>';
+  if (call.result_data) {
+    try {
+      resultHtml = `<pre class="code-block">${escapeHtml(JSON.stringify(call.result_data, null, 2))}</pre>`;
+    } catch (e) {
+      resultHtml = `<code>${escapeHtml(JSON.stringify(call.result_data))}</code>`;
+    }
+  }
+
+  elements.drawerTitle.textContent = '调用详情';
+  elements.drawerBody.innerHTML = `
+    <div class="chain-section">
+      <div class="chain-section-header">
+        <span class="chain-section-icon">📞</span>
+        <span class="chain-section-title">基本信息</span>
+      </div>
+      <div class="chain-section-body">
+        <div class="field-group">
+          <span class="field-label">工具名称</span>
+          <span class="field-content">${escapeHtml(call.tool_name)}</span>
+        </div>
+        <div class="field-group">
+          <span class="field-label">执行状态</span>
+          <span class="priority-badge ${statusClass}">${statusIcon} ${call.result_status}</span>
+        </div>
+        <div class="field-group">
+          <span class="field-label">调用时间</span>
+          <span class="field-content">${time}</span>
+        </div>
+        ${call.duration_ms ? `
+        <div class="field-group">
+          <span class="field-label">执行耗时</span>
+          <span class="field-content">${call.duration_ms} ms</span>
+        </div>
+        ` : ''}
+        ${call.related_correction_id ? `
+        <div class="field-group">
+          <span class="field-label">关联修正对</span>
+          <span class="record-id">${call.related_correction_id}</span>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+
+    <div class="chain-section">
+      <div class="chain-section-header">
+        <span class="chain-section-icon">📥</span>
+        <span class="chain-section-title">调用参数</span>
+      </div>
+      <div class="chain-section-body">
+        ${paramsHtml}
+      </div>
+    </div>
+
+    ${call.result_data ? `
+    <div class="chain-section">
+      <div class="chain-section-header">
+        <span class="chain-section-icon">📤</span>
+        <span class="chain-section-title">返回结果</span>
+      </div>
+      <div class="chain-section-body">
+        ${resultHtml}
+      </div>
+    </div>
+    ` : ''}
+
+    ${call.error_message ? `
+    <div class="chain-section">
+      <div class="chain-section-header" style="border-left-color: #ef4444;">
+        <span class="chain-section-icon">⚠️</span>
+        <span class="chain-section-title">错误信息</span>
+      </div>
+      <div class="chain-section-body">
+        <div class="comparison-view">
+          <div class="comparison-item wrong">
+            <div class="comparison-label">错误详情</div>
+            <div class="comparison-content">${escapeHtml(call.error_message)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    ` : ''}
+
+    <div class="chain-section">
+      <div class="chain-section-header">
+        <span class="chain-section-icon">📋</span>
+        <span class="chain-section-title">元数据</span>
+      </div>
+      <div class="chain-section-body">
+        <div class="metadata-section">
+          <div class="metadata-item">
+            <span class="metadata-label">记录ID</span>
+            <span class="record-id">${call.id}</span>
+          </div>
+          ${call.caller_info ? `
+          <div class="metadata-item">
+            <span class="metadata-label">调用者</span>
+            <span class="metadata-value">${escapeHtml(call.caller_info)}</span>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 隐藏编辑和删除按钮（调用记录不可编辑）
+  const editBtn = document.getElementById('drawer-edit');
+  const deleteBtn = document.getElementById('drawer-delete');
+  if (editBtn) editBtn.style.display = 'none';
+  if (deleteBtn) deleteBtn.style.display = 'none';
+
+  elements.drawer.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+// 更新调用记录分页
+function updateCallPagination() {
+  const prevBtn = document.getElementById('call-prev');
+  const nextBtn = document.getElementById('call-next');
+  const pageInfo = document.getElementById('call-page-info');
+
+  const totalPages = Math.ceil(callState.total / callState.limit);
+  const currentPage = callState.page + 1;
+
+  if (prevBtn) prevBtn.disabled = callState.page === 0;
+  if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+  if (pageInfo) pageInfo.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页 (${callState.total} 条)`;
+}
+
+// 绑定调用记录事件
+function bindCallEvents() {
+  // 刷新按钮
+  const refreshBtn = document.getElementById('btn-refresh-calls');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      loadCalls();
+      loadCallStats();
+    });
+  }
+
+  // 筛选器
+  const toolFilter = document.getElementById('call-filter-tool');
+  const statusFilter = document.getElementById('call-filter-status');
+
+  if (toolFilter) {
+    toolFilter.addEventListener('change', (e) => {
+      callState.filterTool = e.target.value;
+      callState.page = 0;
+      loadCalls();
+    });
+  }
+
+  if (statusFilter) {
+    statusFilter.addEventListener('change', (e) => {
+      callState.filterStatus = e.target.value;
+      callState.page = 0;
+      loadCalls();
+    });
+  }
+
+  // 分页按钮
+  const prevBtn = document.getElementById('call-prev');
+  const nextBtn = document.getElementById('call-next');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (callState.page > 0) {
+        callState.page--;
+        loadCalls();
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(callState.total / callState.limit);
+      if (callState.page + 1 < totalPages) {
+        callState.page++;
+        loadCalls();
+      }
+    });
+  }
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   cacheElements();
   bindEvents();
+  bindCallEvents();
   loadDashboard();
 });
