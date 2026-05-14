@@ -2,7 +2,7 @@
   <div class="rule-list">
     <div class="header">
       <h2>行为规则列表</h2>
-      <el-button type="primary" @click="$router.push('/add')">
+      <el-button type="primary" @click="$router.push('/add-rule')">
         <el-icon><Plus /></el-icon>
         添加规则
       </el-button>

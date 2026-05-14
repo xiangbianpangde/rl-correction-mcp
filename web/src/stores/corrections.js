@@ -20,8 +20,39 @@ async function api(endpoint, options = {}) {
 function normalizeRecord(record) {
   // 新格式已有 input_chain/output_chain
   if (record.input_chain) return record;
-  
-  // 旧格式转换
+
+  // 行为规则类型
+  if (record.type === 'behavior_rule') {
+    return {
+      ...record,
+      input_chain: {
+        raw_input: '',
+        trigger_condition: record.metadata?.trigger_condition || record.title || '',
+      },
+      output_chain: {
+        wrong_output: '',
+        correct_output: '',
+        quality_score: record.quality_score || 50,
+        rule_content: record.preview?.split('规则内容: ')[1]?.split('\n')[0] || '',
+        rule_type: record.metadata?.rule_type || 'should',
+      },
+      logic_chain: {
+        wrong_reason: '',
+        correct_reason: '',
+        wrong_cot: '',
+        correct_cot: '',
+      },
+      metadata: {
+        priority: record.priority || 'P1',
+        quality_score: record.quality_score || 50,
+        review_status: record.review_status || 'pending',
+        tags: record.metadata?.tags || '',
+        created_at: record.metadata?.created_at || record.created_at || '',
+      },
+    };
+  }
+
+  // 修正对类型
   return {
     ...record,
     input_chain: {
@@ -126,7 +157,6 @@ export const useCorrectionsStore = defineStore('corrections', () => {
   }
 
   async function addCorrection(data) {
-    // 转换为旧格式
     const payload = {
       scenario: data.raw_input,
       wrong_output: data.wrong_output,
@@ -141,11 +171,11 @@ export const useCorrectionsStore = defineStore('corrections', () => {
 
   async function addRule(data) {
     const payload = {
-      trigger_condition: data.trigger_condition || data.raw_input,
-      rule_content: data.rule_content || data.correct_output,
-      rule_type: data.rule_type,
-      priority: data.priority,
-      tags: Array.isArray(data.tags) ? data.tags.join(',') : data.tags,
+      trigger_condition: data.trigger_condition || '',
+      rule_content: data.rule_content || '',
+      rule_type: data.rule_type || 'must',
+      priority: data.priority || 'P1',
+      tags: Array.isArray(data.tags) ? data.tags : [],
     };
     return api('/rules', { method: 'POST', body: payload });
   }

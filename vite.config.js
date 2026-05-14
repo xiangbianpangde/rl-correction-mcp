@@ -8,6 +8,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
   },
   server: {
     port: 5173,
@@ -17,5 +18,8 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+  },
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia', 'element-plus'],
   },
 });
