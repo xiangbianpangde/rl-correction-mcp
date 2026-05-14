@@ -12,21 +12,22 @@
       v-loading="loading"
       :data="corrections"
       style="width: 100%"
+      row-class-name="clickable-row"
       @row-click="handleRowClick"
     >
       <el-table-column prop="input_chain.raw_input" label="场景描述" min-width="200">
         <template #default="{ row }">
-          <div class="cell-text">{{ row.input_chain?.raw_input || '-' }}</div>
+          <div class="cell-text clickable">{{ row.input_chain?.raw_input || '-' }}</div>
         </template>
       </el-table-column>
       <el-table-column prop="output_chain.wrong_output" label="错误输出" min-width="150">
         <template #default="{ row }">
-          <div class="cell-text wrong">{{ row.output_chain?.wrong_output?.slice(0, 50) }}...</div>
+          <div class="cell-text wrong clickable">{{ row.output_chain?.wrong_output?.slice(0, 50) }}...</div>
         </template>
       </el-table-column>
       <el-table-column prop="output_chain.correct_output" label="正确输出" min-width="150">
         <template #default="{ row }">
-          <div class="cell-text correct">{{ row.output_chain?.correct_output?.slice(0, 50) }}...</div>
+          <div class="cell-text correct clickable">{{ row.output_chain?.correct_output?.slice(0, 50) }}...</div>
         </template>
       </el-table-column>
       <el-table-column prop="metadata.priority" label="优先级" width="100">
@@ -67,6 +68,13 @@
         @current-change="handlePageChange"
       />
     </div>
+
+    <!-- 详情抽屉 -->
+    <CorrectionDetail
+      v-model="detailVisible"
+      :record="selectedRecord"
+      @edit="handleEdit"
+    />
   </div>
 </template>
 
@@ -76,10 +84,15 @@ import { useRouter } from 'vue-router';
 import { useCorrectionsStore } from '../stores/corrections';
 import { storeToRefs } from 'pinia';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import CorrectionDetail from './CorrectionDetail.vue';
 
 const router = useRouter();
 const store = useCorrectionsStore();
 const { corrections, loading, total, currentPage, pageSize } = storeToRefs(store);
+
+// 详情抽屉状态
+const detailVisible = ref(false);
+const selectedRecord = ref(null);
 
 const getPriorityType = (priority) => {
   const map = { P0: 'danger', P1: 'warning', P2: 'info' };
@@ -93,10 +106,12 @@ const getScoreColor = (percentage) => {
 };
 
 const handleRowClick = (row) => {
-  // 显示详情抽屉或跳转详情页
+  selectedRecord.value = row;
+  detailVisible.value = true;
 };
 
 const handleEdit = (row) => {
+  detailVisible.value = false;
   router.push(`/edit/${row.id}`);
 };
 
@@ -144,12 +159,28 @@ onMounted(() => {
   white-space: nowrap;
 }
 
+.cell-text.clickable {
+  cursor: pointer;
+}
+
+.cell-text.clickable:hover {
+  color: #409eff;
+}
+
 .cell-text.wrong {
   color: #f56c6c;
 }
 
 .cell-text.correct {
   color: #67c23a;
+}
+
+:deep(.clickable-row) {
+  cursor: pointer;
+}
+
+:deep(.clickable-row:hover) {
+  background-color: #f5f7fa;
 }
 
 .pagination {
