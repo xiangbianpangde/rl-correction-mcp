@@ -204,7 +204,29 @@ class TripleChainStore:
         documents = results["documents"][offset : offset + limit]
 
         records = []
+        self._ensure_json_collection()
         for i, record_id in enumerate(ids):
+            # 从 JSON collection 获取完整数据以提取标题
+            title = "(无标题)"
+            try:
+                json_result = self._json_collection.get(
+                    ids=[f"json_{record_id}"],
+                    include=["documents"],
+                )
+                if json_result["documents"]:
+                    full_data = json.loads(json_result["documents"][0])
+                    # 尝试多种方式获取标题（兼容新旧格式）
+                    title = (
+                        full_data.get("input_chain", {}).get("extracted_context")  # 三链新版
+                        or full_data.get("extracted_context")  # 旧版直接字段
+                        or full_data.get("scenario")  # 旧版场景字段
+                        or full_data.get("input_chain", {}).get("raw_input")  # 三链原始输入
+                        or full_data.get("trigger_condition")  # 行为规则
+                        or "(无标题)"
+                    )
+            except Exception:
+                pass  # 如果获取失败，使用默认标题
+
             records.append({
                 "id": record_id,
                 "type": metadatas[i].get("type", "unknown"),
@@ -212,6 +234,7 @@ class TripleChainStore:
                 "review_status": metadatas[i].get("review_status", "pending"),
                 "quality_score": metadatas[i].get("quality_score"),
                 "metadata": metadatas[i],
+                "title": title,
                 "preview": documents[i][:200] + "..." if len(documents[i]) > 200 else documents[i],
             })
 

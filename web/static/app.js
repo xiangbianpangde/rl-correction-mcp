@@ -155,9 +155,13 @@ function getRuleTypeLabel(type) {
   return labels[type] || type;
 }
 
-// 获取记录标题（兼容新旧数据结构）
+// 获取记录标题（优先使用后端返回的title字段）
 function getRecordTitle(record) {
-  // 三链新版: input_chain.extracted_context
+  // 后端已处理标题提取，优先使用
+  if (record.title && record.title !== '(无标题)') {
+    return record.title;
+  }
+  // 兼容：如果前端有完整数据，尝试本地提取
   if (record.input_chain?.extracted_context) {
     return record.input_chain.extracted_context;
   }
