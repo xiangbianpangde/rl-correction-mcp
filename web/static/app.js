@@ -6,6 +6,54 @@
 // API 基础 URL
 const API_BASE = '';
 
+// ============================================================
+// 工具函数
+// ============================================================
+
+// 全局加载指示器
+const loader = {
+  element: null,
+  count: 0,
+  
+  init() {
+    this.element = document.getElementById('global-loader');
+  },
+  
+  show() {
+    this.count++;
+    if (this.element) {
+      this.element.classList.remove('hidden');
+    }
+  },
+  
+  hide() {
+    this.count = Math.max(0, this.count - 1);
+    if (this.count === 0 && this.element) {
+      this.element.classList.add('hidden');
+    }
+  },
+  
+  forceHide() {
+    this.count = 0;
+    if (this.element) {
+      this.element.classList.add('hidden');
+    }
+  }
+};
+
+// 防抖函数
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 // 状态管理
 const state = {
   currentView: 'dashboard',
@@ -61,19 +109,29 @@ function cacheElements() {
   elements.btnAddRule = document.getElementById('btn-add-rule');
 }
 
-// API 调用
+// API 调用（带加载指示器）
 async function api(endpoint, options = {}) {
   const url = `${API_BASE}/api${endpoint}`;
-  const response = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: '未知错误' }));
-    throw new Error(error.detail || `HTTP ${response.status}`);
+  loader.show();
+  
+  try {
+    const response = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: '未知错误' }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    // 统一错误提示
+    showToast(error.message || '网络请求失败', 'error');
+    throw error;
+  } finally {
+    loader.hide();
   }
-  return response.json();
 }
 
 const apiService = {
@@ -1088,14 +1146,86 @@ function bindEvents() {
   elements.modalCancel?.addEventListener('click', closeModal);
   elements.modal.querySelector('.modal-backdrop')?.addEventListener('click', closeModal);
 
-  // 模态框提交 - 三链版
-  elements.modalSubmit?.addEventListener('click', async () => {
+  // 表单验证函数
+  function validateForm(type) {
+    const errors = [];
+    
+    if (type === 'correction') {
+      const rawInput = document.getElementById('raw_input')?.value?.trim() || document.getElementById('scenario')?.value?.trim();
+      const wrongOutput = document.getElementById('wrong_output')?.value?.trim();
+      const correctOutput = document.getElementById('correct_output')?.value?.trim();
+      
+      if (!rawInput) {
+        errors.push({ field: 'raw_input', message: '请输入场景描述' });
+      }
+      if (!wrongOutput) {
+        errors.push({ field: 'wrong_output', message: '请输入错误输出' });
+      }
+      if (!correctOutput) {
+        errors.push({ field: 'correct_output', message: '请输入正确输出' });
+      }
+      
+      // 长度检查
+      if (rawInput && rawInput.length > 2000) {
+        errors.push({ field: 'raw_input', message: '场景描述不能超过2000字符' });
+      }
+    } else if (type === 'rule') {
+      const triggerCondition = document.getElementById('trigger_condition')?.value?.trim();
+      const ruleContent = document.getElementById('rule_content')?.value?.trim();
+      
+      if (!triggerCondition) {
+        errors.push({ field: 'trigger_condition', message: '请输入触发条件' });
+      }
+      if (!ruleContent) {
+        errors.push({ field: 'rule_content', message: '请输入规则内容' });
+      }
+    }
+    
+    return errors;
+  }
+
+  // 显示字段错误
+  function showFieldErrors(errors) {
+    // 清除之前的错误
+    document.querySelectorAll('.field-error').forEach(el => el.remove());
+    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+    
+    errors.forEach(error => {
+      const field = document.getElementById(error.field);
+      if (field) {
+        field.classList.add('input-error');
+        const errorEl = document.createElement('div');
+        errorEl.className = 'field-error';
+        errorEl.textContent = error.message;
+        field.parentNode.appendChild(errorEl);
+      }
+    });
+  }
+
+  // 提交锁状态
+  let isSubmitting = false;
+
+  // 模态框提交 - 三链版（带防抖和验证）
+  const handleSubmit = debounce(async () => {
+    if (isSubmitting) return;
+    
     const type = elements.modalSubmit.dataset.type;
     const mode = elements.modalSubmit.dataset.mode || 'add';
 
+    // 表单验证
+    const errors = validateForm(type);
+    if (errors.length > 0) {
+      showFieldErrors(errors);
+      showToast('请检查表单填写', 'error');
+      return;
+    }
+
+    // 设置提交状态
+    isSubmitting = true;
     elements.modalSubmit.disabled = true;
-    const spinner = elements.modalSubmit.querySelector('.spinner');
-    if (spinner) spinner.classList.remove('hidden');
+    elements.modalSubmit.classList.add('btn-submitting');
+    const originalText = elements.modalSubmit.textContent;
+    elements.modalSubmit.textContent = '提交中...';
 
     try {
       if (type === 'correction') {
@@ -1164,12 +1294,16 @@ function bindEvents() {
       loadDashboard();
 
     } catch (error) {
-      showToast((mode === 'edit' ? '修改' : '添加') + '失败: ' + error.message, 'error');
+      // 错误已在 api() 函数中处理
     } finally {
+      isSubmitting = false;
       elements.modalSubmit.disabled = false;
-      if (spinner) spinner.classList.add('hidden');
+      elements.modalSubmit.classList.remove('btn-submitting');
+      elements.modalSubmit.textContent = originalText;
     }
-  });
+  }, 300);
+
+  elements.modalSubmit?.addEventListener('click', handleSubmit);
 
   // 搜索
   elements.ragSearchForm?.addEventListener('submit', performSearch);
@@ -1509,6 +1643,7 @@ function bindCallEvents() {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+  loader.init();  // 初始化加载指示器
   cacheElements();
   bindEvents();
   bindCallEvents();
