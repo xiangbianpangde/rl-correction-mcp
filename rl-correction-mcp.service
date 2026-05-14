@@ -1,0 +1,16 @@
+[Unit]
+Description=RL Correction MCP Web Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/rl-correction-mcp
+Environment=PATH=/opt/rl-correction-mcp/venv/bin
+Environment=PYTHONPATH=/opt/rl-correction-mcp
+ExecStart=/opt/rl-correction-mcp/venv/bin/python /opt/rl-correction-mcp/web_api.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

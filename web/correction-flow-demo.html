@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Correction Flow - RL Correction MCP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+  <style>
+    :root {
+      --parchment: #f5f4ed;
+      --ivory: #faf9f5;
+      --pure-white: #ffffff;
+      --warm-sand: #e8e6dc;
+      --near-black: #141413;
+      --charcoal-warm: #4d4c48;
+      --olive-gray: #5e5d59;
+      --stone-gray: #87867f;
+      --terracotta: #c96442;
+      --coral: #d97757;
+      --accent-blue: #6a9bcc;
+      --accent-green: #788c5d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Lora", Georgia, serif;
+      background: var(--parchment);
+      color: var(--near-black);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      position: relative;
+      width: 320px;
+      background: var(--ivory);
+      border-right: 1px solid var(--warm-sand);
+      overflow: hidden;
+    }
+
+    #bg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sidebar-content {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    h1 {
+      font-family: "Poppins", Arial, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: var(--stone-gray);
+      margin-bottom: 2rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--warm-sand);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: "Poppins", Arial, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--terracotta);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--stone-gray);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+    }
+
+    .philosophy {
+      max-width: 600px;
+      line-height: 1.8;
+      color: var(--charcoal-warm);
+    }
+
+    .philosophy h2 {
+      font-family: "Poppins", Arial, sans-serif;
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      color: var(--near-black);
+    }
+
+    .philosophy p {
+      margin-bottom: 1rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: var(--warm-sand);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--charcoal-warm);
+      margin: 0.25rem;
+    }
+
+    .color-swatch {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <canvas id="bg-canvas"></canvas>
+      <div class="sidebar-content">
+        <h1>Correction Flow</h1>
+        <p class="subtitle">修正之流 — RL Correction MCP 动态背景</p>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value">60</div>
+            <div class="stat-label">粒子数量</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">5</div>
+            <div class="stat-label">品牌色</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">4</div>
+            <div class="stat-label">噪声层</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">∞</div>
+            <div class="stat-label">种子变化</div>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:0.8rem;color:var(--stone-gray);margin-bottom:0.5rem;">品牌色板</p>
+          <span class="color-swatch" style="background:#c96442"></span>
+          <span class="color-swatch" style="background:#d97757"></span>
+          <span class="color-swatch" style="background:#6a9bcc"></span>
+          <span class="color-swatch" style="background:#788c5d"></span>
+          <span class="color-swatch" style="background:#e8e6dc"></span>
+        </div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="philosophy">
+        <h2>修正之流</h2>
+        <p>知识的修正如同河流的改道——错误是蜿蜒的旧河道，正确是笔直的新水路。</p>
+        <p>粒子从混沌中诞生，在噪声场的引导下逐渐趋向有序。每一条轨迹代表一次思维链的推演：从模糊的理解出发，经过修正的转折，最终汇聚成清晰的认知。</p>
+        <p>颜色从温暖的 Terracotta 过渡到冷静的 Blue，象征从错误到正确的修正过程。轨迹的透明度随时间衰减，如同记忆的淡化——旧的修正逐渐融入背景，新的修正清晰可见。</p>
+        <p style="color:var(--stone-gray);font-size:0.875rem;">这是一个经过精心调校的算法，每一个参数都经过反复迭代，体现了计算美学领域顶级工匠的技艺。</p>
+      </div>
+    </main>
+  </div>
+  <script>
+
+// ============================================================
+// Correction Flow - RL Correction MCP 动态背景
+// 轻量级粒子流场动画，使用 Anthropic 品牌色
+// ============================================================
+
+(function() {
+  'use strict';
+
+  const CONFIG = {
+    particleCount: 60,
+    noiseScale: 0.003,
+    noiseSpeed: 0.0003,
+    maxSpeed: 0.8,
+    trailLength: 20,
+    fadeAlpha: 8,
+    colors: {
+      terracotta: [201, 100, 66],   // #c96442
+      coral: [217, 119, 87],        // #d97757
+      blue: [106, 155, 204],        // #6a9bcc
+      green: [120, 140, 93],        // #788c5d
+      sand: [232, 230, 220],        // #e8e6dc
+    }
+  };
+
+  let canvas, ctx;
+  let particles = [];
+  let animId;
+  let isVisible = true;
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.vx = 0;
+      this.vy = 0;
+      this.life = 0;
+      this.maxLife = 300 + Math.random() * 400;
+      this.trail = [];
+      // 随机选择颜色：70% 暖色，30% 冷色
+      const r = Math.random();
+      if (r < 0.35) {
+        this.color = CONFIG.colors.terracotta;
+      } else if (r < 0.6) {
+        this.color = CONFIG.colors.coral;
+      } else if (r < 0.8) {
+        this.color = CONFIG.colors.blue;
+      } else {
+        this.color = CONFIG.colors.green;
+      }
+      this.baseAlpha = 0.15 + Math.random() * 0.2;
+    }
+
+    update(time) {
+      // 多层噪声场
+      const angle = noise(
+        this.x * CONFIG.noiseScale,
+        this.y * CONFIG.noiseScale,
+        time * CONFIG.noiseSpeed
+      ) * Math.PI * 4;
+
+      this.vx += Math.cos(angle) * 0.15;
+      this.vy += Math.sin(angle) * 0.15;
+
+      // 限速
+      const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+      if (speed > CONFIG.maxSpeed) {
+        this.vx = (this.vx / speed) * CONFIG.maxSpeed;
+        this.vy = (this.vy / speed) * CONFIG.maxSpeed;
+      }
+
+      this.x += this.vx;
+      this.y += this.vy;
+      this.life++;
+
+      // 记录轨迹
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > CONFIG.trailLength) {
+        this.trail.shift();
+      }
+
+      // 边界检测 - 重置
+      if (this.x < -10 || this.x > canvas.width + 10 ||
+          this.y < -10 || this.y > canvas.height + 10 ||
+          this.life > this.maxLife) {
+        this.reset();
+      }
+    }
+
+    draw() {
+      if (this.trail.length < 2) return;
+
+      const lifeRatio = this.life / this.maxLife;
+      // 淡入淡出
+      let alpha = this.baseAlpha;
+      if (lifeRatio < 0.1) {
+        alpha *= lifeRatio / 0.1;
+      } else if (lifeRatio > 0.8) {
+        alpha *= (1 - lifeRatio) / 0.2;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(this.trail[0].x, this.trail[0].y);
+
+      for (let i = 1; i < this.trail.length; i++) {
+        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+      }
+
+      ctx.strokeStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${alpha})`;
+      ctx.lineWidth = 1.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }
+  }
+
+  function init() {
+    canvas = document.getElementById('bg-canvas');
+    if (!canvas) return;
+
+    ctx = canvas.getContext('2d');
+    resize();
+
+    for (let i = 0; i < CONFIG.particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    // 监听可见性变化
+    document.addEventListener('visibilitychange', () => {
+      isVisible = !document.hidden;
+      if (isVisible) animate();
+    });
+
+    animate();
+  }
+
+  function resize() {
+    if (!canvas) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+  }
+
+  let time = 0;
+  function animate() {
+    if (!isVisible) return;
+    animId = requestAnimationFrame(animate);
+
+    // 淡出效果
+    ctx.fillStyle = `rgba(250, 249, 245, ${CONFIG.fadeAlpha / 100})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    time++;
+    for (const p of particles) {
+      p.update(time);
+      p.draw();
+    }
+  }
+
+  // 窗口大小变化时重新调整
+  window.addEventListener('resize', () => {
+    resize();
+  });
+
+  // DOM 加载完成后初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+  </script>
+</body>
+</html>
