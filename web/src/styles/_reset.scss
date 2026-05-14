@@ -1,0 +1,148 @@
+/* ========================================
+   Global Reset & Base Styles
+   ======================================== */
+
+/* Light mode color scheme */
+html {
+  color-scheme: light;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: "Lora", Georgia, "Times New Roman", "Noto Color Emoji", serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+/* Emoji 字体支持 */
+.emoji, [aria-hidden="true"] {
+  font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-style: normal;
+}
+
+/* ========================================
+   Typography - Anthropic 风格
+   ======================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Poppins", Arial, "Helvetica Neue", sans-serif;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+h1 {
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 1.375rem;
+  line-height: 1.25;
+}
+
+.page-header {
+  margin-bottom: var(--space-xl);
+}
+
+.page-description {
+  color: var(--color-text-secondary);
+  margin-top: var(--space-xs);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.section {
+  margin-top: var(--space-2xl);
+}
+
+.section h3 {
+  margin-bottom: var(--space-lg);
+  color: var(--color-text);
+}
+
+/* ========================================
+   Accessibility
+   ======================================== */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-md);
+  z-index: 9999;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-primary);
+  color: var(--ivory);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: var(--space-md);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus states - 温暖的 ring */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus-blue);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus-blue);
+}
+
+/* ========================================
+   Layout
+   ======================================== */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Main content */
+.main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: var(--space-xl);
+  min-height: 100vh;
+  background: var(--color-bg);
+}

@@ -1,0 +1,85 @@
+/* ========================================
+   Buttons - Anthropic 风格
+   ======================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  white-space: nowrap;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary - Terracotta 品牌色 */
+.btn-primary {
+  background: var(--terracotta);
+  color: var(--ivory);
+  box-shadow: 0px 0px 0px 1px var(--terracotta);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--coral);
+  box-shadow: 0px 0px 0px 1px var(--coral);
+}
+
+/* Secondary - Warm Sand */
+.btn-secondary {
+  background: var(--warm-sand);
+  color: var(--charcoal-warm);
+  box-shadow: 0px 0px 0px 1px #d1cfc5;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #dedcd1;
+  box-shadow: 0px 0px 0px 1px #c2c0b6;
+}
+
+/* Danger - Error Crimson */
+.btn-danger {
+  background: var(--error-crimson);
+  color: var(--pure-white);
+  box-shadow: 0px 0px 0px 1px var(--error-crimson);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger-hover);
+  box-shadow: 0px 0px 0px 1px var(--danger-hover);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.btn-close:hover {
+  background: var(--warm-sand);
+  color: var(--color-text);
+}

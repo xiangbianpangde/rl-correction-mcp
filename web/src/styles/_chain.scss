@@ -1,0 +1,419 @@
+/* ========================================
+   Chain Section, Field Group, Chain of Thought, Comparison View,
+   Metadata, Timeline, Tags Style, ID Display, Empty Value Hint
+   ======================================== */
+
+/* Detail view */
+.detail-section {
+  margin-bottom: var(--space-xl);
+}
+
+.detail-section h4 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.detail-content {
+  padding: var(--space-md);
+  background: var(--pure-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-text);
+}
+
+.detail-content.wrong {
+  border-left: 3px solid var(--error-crimson);
+}
+
+.detail-content.correct {
+  border-left: 3px solid var(--success);
+}
+
+/* 链式卡片布局 */
+.chain-section {
+  margin-bottom: var(--space-xl);
+  background: var(--pure-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.chain-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: linear-gradient(135deg, var(--ivory) 0%, var(--warm-sand) 100%);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.chain-section-header.input-chain {
+  border-left: 4px solid var(--accent-blue);
+}
+
+.chain-section-header.output-chain {
+  border-left: 4px solid var(--success);
+}
+
+.chain-section-header.logic-chain {
+  border-left: 4px solid var(--terracotta);
+}
+
+.chain-section-icon {
+  font-size: 1.25rem;
+}
+
+.chain-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.chain-section-body {
+  padding: var(--space-lg);
+}
+
+/* 字段组 */
+.field-group {
+  margin-bottom: var(--space-md);
+}
+
+.field-group:last-child {
+  margin-bottom: 0;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-sm);
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.field-label-icon {
+  font-size: 0.875rem;
+}
+
+.field-content {
+  padding: var(--space-md);
+  background: var(--ivory);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.field-content.wrong-output {
+  background: rgba(181, 51, 51, 0.05);
+  border-left: 3px solid var(--error-crimson);
+}
+
+.field-content.correct-output {
+  background: rgba(120, 140, 93, 0.05);
+  border-left: 3px solid var(--success);
+}
+
+.field-content.reasoning {
+  background: rgba(106, 155, 204, 0.05);
+  border-left: 3px solid var(--accent-blue);
+}
+
+/* 思维链样式 */
+.chain-of-thought {
+  padding: var(--space-md);
+  background: var(--pure-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.cot-step {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.cot-step:last-child {
+  border-bottom: none;
+}
+
+.cot-step-number {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--terracotta);
+  color: var(--ivory);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 50%;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.cot-step-content {
+  flex: 1;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  padding-top: 2px;
+}
+
+/* 对比视图 */
+.comparison-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.comparison-item {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+}
+
+.comparison-item.wrong {
+  background: rgba(181, 51, 51, 0.05);
+  border: 1px solid rgba(181, 51, 51, 0.2);
+}
+
+.comparison-item.correct {
+  background: rgba(120, 140, 93, 0.05);
+  border: 1px solid rgba(120, 140, 93, 0.2);
+}
+
+.comparison-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.comparison-label.wrong {
+  color: var(--error-crimson);
+}
+
+.comparison-label.correct {
+  color: var(--success);
+}
+
+.comparison-content {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  white-space: pre-wrap;
+}
+
+/* 元数据区域 */
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--warm-sand);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-md);
+}
+
+.metadata-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metadata-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.metadata-value {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text);
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+/* 元数据网格优化 */
+.metadata-section {
+  padding: var(--space-md);
+  background: var(--warm-sand);
+  border-radius: var(--radius-md);
+}
+
+.metadata-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.metadata-row:last-child {
+  margin-bottom: 0;
+}
+
+.metadata-item-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.metadata-item-inline .metadata-label {
+  margin-bottom: 0;
+  font-size: 0.75rem;
+}
+
+/* 标签容器 */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+/* 标签样式优化 */
+.tags-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--pure-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--charcoal-warm);
+  transition: all var(--transition-fast);
+}
+
+.tag-item:hover {
+  background: var(--warm-sand);
+  border-color: var(--terracotta);
+}
+
+.tag-item::before {
+  content: '#';
+  color: var(--terracotta);
+  font-weight: 500;
+}
+
+/* 相似度指示器 */
+.similarity-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.similarity-bar {
+  width: 60px;
+  height: 4px;
+  background: var(--warm-sand);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.similarity-fill {
+  height: 100%;
+  background: var(--terracotta);
+  border-radius: 2px;
+  transition: width var(--transition-base);
+}
+
+/* 时间线样式 */
+.timeline {
+  position: relative;
+  padding-left: var(--space-lg);
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--color-border);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: var(--space-md);
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  background: var(--terracotta);
+  border-radius: 50%;
+  border: 2px solid var(--pure-white);
+}
+
+.timeline-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.timeline-value {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+/* ID 显示优化 */
+.record-id {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--pure-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: "SF Mono", "Monaco", monospace;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.record-id code {
+  flex: 1;
+  word-break: break-all;
+}
+
+/* 空值提示 */
+.empty-field {
+  color: var(--color-text-muted);
+  font-style: italic;
+  font-size: 0.875rem;
+}

@@ -1,0 +1,79 @@
+/* ========================================
+   CSS Variables & Design Tokens
+   ======================================== */
+
+:root {
+  /* Anthropic 温暖色调 */
+  --parchment: #f5f4ed;
+  --ivory: #faf9f5;
+  --pure-white: #ffffff;
+  --warm-sand: #e8e6dc;
+  --border-cream: #f0eee6;
+  --border-warm: #e8e6dc;
+
+  /* 文字颜色 */
+  --near-black: #141413;
+  --charcoal-warm: #4d4c48;
+  --olive-gray: #5e5d59;
+  --stone-gray: #87867f;
+  --dark-warm: #3d3d3a;
+  --warm-silver: #b0aea5;
+
+  /* 深色表面 */
+  --dark-surface: #30302e;
+  --deep-dark: #141413;
+
+  /* 品牌色 - Anthropic Official */
+  --terracotta: #c96442;
+  --coral: #d97757;
+  --accent-blue: #6a9bcc;
+  --accent-green: #788c5d;
+  --error-crimson: #b53333;
+  --focus-blue: #3898ec;
+
+  /* 语义化映射 */
+  --color-bg: var(--parchment);
+  --color-bg-elevated: var(--ivory);
+  --color-bg-card: var(--pure-white);
+  --color-border: var(--border-cream);
+  --color-border-prominent: var(--border-warm);
+  --color-text: var(--near-black);
+  --color-text-secondary: var(--olive-gray);
+  --color-text-muted: var(--stone-gray);
+  --color-primary: var(--terracotta);
+  --color-primary-hover: var(--coral);
+  --color-danger: var(--error-crimson);
+  --color-danger-hover: #a02d2d;
+  --color-success: var(--accent-green);
+  --color-warning: #b8860b;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Border Radius - Anthropic 风格：柔和圆润 */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  /* Shadows - 温暖的 ring shadow */
+  --shadow-ring: 0px 0px 0px 1px var(--warm-sand);
+  --shadow-ring-hover: 0px 0px 0px 1px #d1cfc5;
+  --shadow-whisper: rgba(0,0,0,0.05) 0px 4px 24px;
+  --shadow-soft: rgba(0,0,0,0.08) 0px 8px 32px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Layout */
+  --sidebar-width: 280px;
+  --header-height: 64px;
+}

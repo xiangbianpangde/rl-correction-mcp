@@ -1,0 +1,170 @@
+/* ========================================
+   Badges, Tags, Priority, Review Status, Rule Type, Quality Score
+   ======================================== */
+
+/* Tags */
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.tag {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--warm-sand);
+  border: 1px solid var(--color-border-prominent);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--charcoal-warm);
+}
+
+/* Rule types */
+.rule-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.rule-type {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--ivory);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.rule-type-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.rule-type-indicator.must { background: var(--error-crimson); }
+.rule-type-indicator.must_not { background: var(--warning); }
+.rule-type-indicator.should { background: var(--success); }
+.rule-type-indicator.should_not { background: var(--stone-gray); }
+
+/* Similarity badge */
+.similarity-badge {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--terracotta);
+  color: var(--ivory);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* 优先级徽章 */
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.priority-badge.p0 {
+  background: rgba(181, 51, 51, 0.1);
+  color: var(--error-crimson);
+}
+
+.priority-badge.p1 {
+  background: rgba(184, 134, 11, 0.1);
+  color: var(--warning);
+}
+
+.priority-badge.p2 {
+  background: rgba(120, 140, 93, 0.1);
+  color: var(--success);
+}
+
+/* 审核状态徽章 */
+.review-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.review-status.pending {
+  background: rgba(184, 134, 11, 0.1);
+  color: var(--warning);
+}
+
+.review-status.approved {
+  background: rgba(120, 140, 93, 0.1);
+  color: var(--success);
+}
+
+.review-status.rejected {
+  background: rgba(181, 51, 51, 0.1);
+  color: var(--error-crimson);
+}
+
+/* 规则类型徽章 */
+.rule-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.rule-type-badge.must {
+  background: rgba(181, 51, 51, 0.1);
+  color: var(--error-crimson);
+}
+
+.rule-type-badge.must_not {
+  background: rgba(184, 134, 11, 0.1);
+  color: var(--warning);
+}
+
+.rule-type-badge.should {
+  background: rgba(120, 140, 93, 0.1);
+  color: var(--success);
+}
+
+.rule-type-badge.should_not {
+  background: rgba(135, 134, 127, 0.1);
+  color: var(--stone-gray);
+}
+
+/* 质量评分 */
+.quality-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.quality-score.high {
+  background: rgba(120, 140, 93, 0.1);
+  color: var(--success);
+}
+
+.quality-score.medium {
+  background: rgba(184, 134, 11, 0.1);
+  color: var(--warning);
+}
+
+.quality-score.low {
+  background: rgba(181, 51, 51, 0.1);
+  color: var(--error-crimson);
+}
