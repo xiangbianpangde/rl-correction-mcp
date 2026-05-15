@@ -172,6 +172,7 @@ export const useCorrectionsStore = defineStore('corrections', () => {
   async function addRule(data) {
     const payload = {
       trigger_condition: data.trigger_condition || '',
+      scenario_description: data.scenario_description || data.trigger_condition || '',
       rule_content: data.rule_content || '',
       rule_type: data.rule_type || 'must',
       priority: data.priority || 'P1',

@@ -194,6 +194,7 @@ onMounted(() => {
 
 .section-card {
   margin-bottom: 24px;
+  border-left: 3px solid var(--color-primary);
 }
 
 .actions {
@@ -201,5 +202,7 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
 }
 </style>

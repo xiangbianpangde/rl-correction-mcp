@@ -11,7 +11,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint web/src/",
-    "format": "prettier --write \"web/src/**/*.{js,scss}\""
+    "format": "prettier --write \"web/src/**/*.{js,scss}\"",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run e2e"
   },
   "repository": {
     "type": "git",
@@ -25,16 +31,21 @@
   },
   "homepage": "https://github.com/xiangbianpangde/rl-correction-mcp#readme",
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "@vue/test-utils": "^2.4.10",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "happy-dom": "^20.9.0",
     "prettier": "^3.8.3",
     "sass": "^1.99.0",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.6"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
-    "@vitejs/plugin-vue": "^6.0.6",
+    "@vueuse/core": "^14.3.0",
     "element-plus": "^2.14.0",
     "pinia": "^3.0.4",
     "vue": "^3.5.34",

@@ -264,8 +264,16 @@ async def add_rule(data: BehaviorRuleCreate):
             "rule_type": record.output_chain.rule_type,
             "message": "行为规则已添加",
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_msg = str(e)
+        if "OPENAI_API_KEY" in error_msg or "embedding" in error_msg.lower():
+            raise HTTPException(
+                status_code=500, 
+                detail="Embedding 服务配置错误。请设置有效的 EMBEDDING_API_KEY 环境变量，或确保 sentence-transformers 已安装以使用本地模型。"
+            )
+        raise HTTPException(status_code=400, detail=error_msg)
 
 
 # ============================================================

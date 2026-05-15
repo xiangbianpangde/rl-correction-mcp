@@ -165,7 +165,7 @@ const formatDate = (date) => {
 .id-text {
   font-size: 12px;
   word-break: break-all;
-  color: #909399;
+  color: var(--text-muted);
 }
 
 .content-box {
@@ -176,36 +176,37 @@ const formatDate = (date) => {
 }
 
 .wrong-content {
-  color: #f56c6c;
+  color: var(--color-danger);
 }
 
 .correct-content {
-  color: #67c23a;
+  color: var(--color-success);
 }
 
 .wrong-header {
-  color: #f56c6c;
+  color: var(--color-danger);
 }
 
 .correct-header {
-  color: #67c23a;
+  color: var(--color-success);
 }
 
 .reason-box {
   margin-top: 12px;
   padding: 12px;
-  background: #f5f7fa;
-  border-radius: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
 }
 
 .reason-label {
   font-weight: bold;
   margin-bottom: 8px;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .reason-content {
-  color: #606266;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -214,6 +215,6 @@ const formatDate = (date) => {
   justify-content: flex-end;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid var(--border-light);
 }
 </style>

@@ -153,6 +153,10 @@ onMounted(() => {
   margin-bottom: 24px;
 }
 
+.header h2 {
+  font-family: var(--font-heading);
+}
+
 .cell-text {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -161,26 +165,28 @@ onMounted(() => {
 
 .cell-text.clickable {
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .cell-text.clickable:hover {
-  color: #409eff;
+  color: var(--color-info);
 }
 
 .cell-text.wrong {
-  color: #f56c6c;
+  color: var(--color-danger);
 }
 
 .cell-text.correct {
-  color: #67c23a;
+  color: var(--color-success);
 }
 
 :deep(.clickable-row) {
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 :deep(.clickable-row:hover) {
-  background-color: #f5f7fa;
+  background-color: var(--table-row-hover, var(--bg-secondary));
 }
 
 .pagination {

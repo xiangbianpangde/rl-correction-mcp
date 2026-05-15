@@ -52,10 +52,11 @@ class TripleChainStore:
 
         self._client = chromadb.PersistentClient(path=persist_path)
 
-        self._embedding_fn = embedding_functions.OpenAIEmbeddingFunction(
+        # 尝试使用 OpenAI Embedding，如果失败则使用本地 SentenceTransformer
+        self._embedding_fn = self._create_embedding_function(
             api_key=api_key,
             api_base=api_base,
-            model_name=embedding_model,
+            embedding_model=embedding_model,
         )
 
         # 主向量库
@@ -70,6 +71,37 @@ class TripleChainStore:
             f"path={persist_path}, collection={collection_name}, "
             f"count={self._collection.count()}"
         )
+
+    def _create_embedding_function(self, api_key: str, api_base: str, embedding_model: str):
+        """创建 embedding 函数，优先使用 OpenAI，失败时降级到本地模型"""
+        # 检查是否有有效的 API key（不是 dummy/empty）
+        has_valid_api_key = api_key and api_key not in ("dummy-key", "", "sk-", "test")
+
+        if has_valid_api_key:
+            try:
+                # 尝试使用 OpenAI Embedding
+                fn = embedding_functions.OpenAIEmbeddingFunction(
+                    api_key=api_key,
+                    api_base=api_base,
+                    model_name=embedding_model,
+                )
+                logger.info(f"使用 OpenAI Embedding API: {api_base}")
+                return fn
+            except Exception as e:
+                logger.warning(f"OpenAI Embedding 初始化失败，将使用本地模型: {e}")
+
+        # 降级到本地 SentenceTransformer
+        try:
+            # 使用轻量级多语言模型
+            fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+                model_name="paraphrase-MiniLM-L3-v2"
+            )
+            logger.info("使用本地 SentenceTransformer Embedding (paraphrase-MiniLM-L3-v2)")
+            return fn
+        except Exception as e:
+            logger.error(f"本地 Embedding 模型初始化失败: {e}")
+            # 最后尝试使用默认的（可能会失败，但让错误暴露出来）
+            return embedding_functions.DefaultEmbeddingFunction()
 
     @property
     def collection(self):

@@ -106,6 +106,10 @@ onMounted(() => {
   margin-bottom: 24px;
 }
 
+.header h2 {
+  font-family: var(--font-heading);
+}
+
 .cell-text {
   overflow: hidden;
   text-overflow: ellipsis;

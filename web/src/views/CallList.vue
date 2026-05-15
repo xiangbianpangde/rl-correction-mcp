@@ -156,7 +156,7 @@ onMounted(() => {
 }
 
 .description {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 24px;
 }
 
@@ -172,12 +172,14 @@ onMounted(() => {
 .stat-value {
   font-size: 32px;
   font-weight: 600;
-  color: #1a1a1a;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
 }
 
 .stat-label {
   font-size: 14px;
-  color: #666;
+  font-family: var(--font-heading);
+  color: var(--text-secondary);
   margin-top: 8px;
 }
 
@@ -187,7 +189,7 @@ onMounted(() => {
 
 .record-id {
   font-family: monospace;
-  color: #409eff;
+  color: var(--color-info);
 }
 
 .pagination {

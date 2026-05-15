@@ -41,8 +41,10 @@
           <el-col :span="12">
             <el-form-item label="规则类型" prop="rule_type">
               <el-select v-model="form.rule_type" style="width: 100%">
-                <el-option label="必须 (Must)" value="must" />
-                <el-option label="建议 (Should)" value="should" />
+                <el-option label="必须做 (Must)" value="must" />
+                <el-option label="禁止做 (Must Not)" value="must_not" />
+                <el-option label="建议做 (Should)" value="should" />
+                <el-option label="建议不做 (Should Not)" value="should_not" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -114,6 +116,7 @@ const handleSubmit = async () => {
   try {
     const payload = {
       trigger_condition: form.trigger_condition,
+      scenario_description: form.trigger_condition, // 使用触发条件作为场景描述
       rule_content: form.rule_content,
       rule_type: form.rule_type,
       priority: form.priority,
@@ -145,6 +148,7 @@ onMounted(() => {
 
 .section-card {
   margin-bottom: 24px;
+  border-left: 3px solid var(--color-primary);
 }
 
 .actions {
@@ -152,5 +156,7 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
 }
 </style>

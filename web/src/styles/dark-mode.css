@@ -1,0 +1,626 @@
+/* ============================================================
+   RL Correction MCP — Anthropic Brand Design System
+   ============================================================ */
+
+/* --- Font Imports (fallback-safe) --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+/* ============================================================
+   1. CSS Custom Properties — Light Theme
+   ============================================================ */
+:root,
+:root[data-theme="light"] {
+  /* --- Anthropic Brand Palette --- */
+  --anthropic-dark: #141413;
+  --anthropic-light: #faf9f5;
+  --anthropic-mid-gray: #b0aea5;
+  --anthropic-light-gray: #e8e6dc;
+
+  /* --- Accent Colors --- */
+  --accent-orange: #d97757;
+  --accent-blue: #6a9bcc;
+  --accent-green: #788c5d;
+
+  /* --- Semantic Colors --- */
+  --bg-primary: #faf9f5;
+  --bg-secondary: #f0efe9;
+  --bg-tertiary: #e8e6dc;
+  --bg-elevated: #ffffff;
+
+  --text-primary: #141413;
+  --text-secondary: #5a5950;
+  --text-muted: #8a8980;
+  --text-inverse: #faf9f5;
+
+  --border-color: #d9d8d0;
+  --border-light: #e8e6dc;
+
+  /* --- Brand Primary (Orange) --- */
+  --color-primary: #d97757;
+  --color-primary-hover: #c4684c;
+  --color-primary-light: rgba(217, 119, 87, 0.08);
+  --color-primary-text: #ffffff;
+
+  /* --- Functional Colors --- */
+  --color-success: #788c5d;
+  --color-success-light: rgba(120, 140, 93, 0.1);
+  --color-warning: #d4a843;
+  --color-warning-light: rgba(212, 168, 67, 0.1);
+  --color-danger: #c45c3e;
+  --color-danger-light: rgba(196, 92, 62, 0.1);
+  --color-info: #6a9bcc;
+  --color-info-light: rgba(106, 155, 204, 0.1);
+
+  /* --- Sidebar (Light) --- */
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #5a5950;
+  --sidebar-text-hover: #141413;
+  --sidebar-active: #d97757;
+  --sidebar-hover: rgba(217, 119, 87, 0.08);
+  --sidebar-border: #e8e6dc;
+
+  /* --- Cards --- */
+  --card-bg: #ffffff;
+  --card-border: #e8e6dc;
+  --card-shadow: 0 1px 3px rgba(20, 20, 19, 0.04), 0 4px 12px rgba(20, 20, 19, 0.06);
+
+  /* --- Inputs --- */
+  --input-bg: #ffffff;
+  --input-border: #d9d8d0;
+  --input-text: #141413;
+  --input-placeholder: #b0aea5;
+  --input-focus-border: #d97757;
+  --input-focus-shadow: 0 0 0 3px rgba(217, 119, 87, 0.15);
+
+  /* --- Table --- */
+  --table-bg: #ffffff;
+  --table-header-bg: #f5f4ef;
+  --table-row-hover: #faf9f5;
+  --table-border: #e8e6dc;
+  --table-stripe: #faf9f5;
+
+  /* --- Shadows --- */
+  --shadow-xs: 0 1px 2px rgba(20, 20, 19, 0.04);
+  --shadow-sm: 0 1px 3px rgba(20, 20, 19, 0.06), 0 1px 2px rgba(20, 20, 19, 0.04);
+  --shadow-md: 0 4px 6px rgba(20, 20, 19, 0.04), 0 2px 4px rgba(20, 20, 19, 0.03);
+  --shadow-lg: 0 10px 25px rgba(20, 20, 19, 0.08), 0 4px 10px rgba(20, 20, 19, 0.04);
+  --shadow-xl: 0 20px 50px rgba(20, 20, 19, 0.12);
+
+  /* --- Radius --- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* --- Transitions --- */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
+  --transition-slow: 0.4s ease;
+
+  /* --- Typography --- */
+  --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Lora', Georgia, 'Times New Roman', serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+
+  /* --- Spacing Scale --- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+}
+
+/* ============================================================
+   2. CSS Custom Properties — Dark Theme
+   ============================================================ */
+:root[data-theme="dark"],
+.dark {
+  --bg-primary: #141413;
+  --bg-secondary: #1e1e1c;
+  --bg-tertiary: #282826;
+  --bg-elevated: #1e1e1c;
+
+  --text-primary: #e8e6dc;
+  --text-secondary: #a0a098;
+  --text-muted: #6a6a62;
+  --text-inverse: #141413;
+
+  --border-color: #333330;
+  --border-light: #282826;
+
+  --color-primary: #e08a6e;
+  --color-primary-hover: #eaa088;
+  --color-primary-light: rgba(224, 138, 110, 0.12);
+
+  --color-success: #8fa872;
+  --color-success-light: rgba(143, 168, 114, 0.12);
+  --color-warning: #e0be5a;
+  --color-warning-light: rgba(224, 190, 90, 0.12);
+  --color-danger: #e07058;
+  --color-danger-light: rgba(224, 112, 88, 0.12);
+  --color-info: #7eb8dc;
+  --color-info-light: rgba(126, 184, 220, 0.12);
+
+  --sidebar-bg: #0e0e0d;
+  --sidebar-text: #8a8980;
+  --sidebar-text-hover: #e8e6dc;
+  --sidebar-active: #e08a6e;
+  --sidebar-hover: rgba(255, 255, 255, 0.04);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+
+  --card-bg: #1e1e1c;
+  --card-border: #333330;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.25);
+
+  --input-bg: #1e1e1c;
+  --input-border: #444440;
+  --input-text: #e8e6dc;
+  --input-placeholder: #6a6a62;
+  --input-focus-border: #e08a6e;
+  --input-focus-shadow: 0 0 0 3px rgba(224, 138, 110, 0.2);
+
+  --table-bg: #1e1e1c;
+  --table-header-bg: #181816;
+  --table-row-hover: #282826;
+  --table-border: #333330;
+  --table-stripe: #1a1a18;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   3. Global Base Styles
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* --- Headings use Poppins --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.25rem; margin-bottom: var(--space-md); }
+h3 { font-size: 1.125rem; }
+h4 { font-size: 1rem; }
+
+/* --- Paragraphs --- */
+p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* --- Links --- */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* --- Selection --- */
+::selection {
+  background-color: rgba(217, 119, 87, 0.2);
+  color: var(--text-primary);
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--anthropic-mid-gray);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ============================================================
+   4. Element Plus — Global Overrides (Light + Dark)
+   ============================================================ */
+
+/* --- Card --- */
+.el-card {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--card-shadow) !important;
+  color: var(--text-primary) !important;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.el-card:hover {
+  box-shadow: var(--shadow-md) !important;
+}
+.el-card__header {
+  border-bottom: 1px solid var(--border-light) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  padding: var(--space-md) var(--space-lg) !important;
+}
+
+/* --- Button --- */
+.el-button {
+  font-family: var(--font-heading) !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--transition-fast) !important;
+  letter-spacing: 0.01em;
+}
+.el-button--primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary-text) !important;
+}
+.el-button--primary:hover {
+  background-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+}
+.el-button--primary.is-plain {
+  background-color: var(--color-primary-light) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+.el-button--danger {
+  background-color: var(--color-danger) !important;
+  border-color: var(--color-danger) !important;
+}
+.el-button--success {
+  background-color: var(--color-success) !important;
+  border-color: var(--color-success) !important;
+  color: #fff !important;
+}
+.el-button--default {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+.el-button--default:hover {
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+/* --- Table --- */
+.el-table {
+  background-color: var(--table-bg) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden;
+}
+.el-table th.el-table__cell {
+  background-color: var(--table-header-bg) !important;
+  color: var(--text-secondary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 500 !important;
+  font-size: 0.8125rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--table-border) !important;
+}
+.el-table td.el-table__cell {
+  border-bottom: 1px solid var(--border-light) !important;
+}
+.el-table tr {
+  background-color: var(--table-bg) !important;
+  transition: background-color var(--transition-fast);
+}
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: var(--table-stripe) !important;
+}
+.el-table__body tr:hover > td.el-table__cell {
+  background-color: var(--table-row-hover) !important;
+}
+.el-table__empty-text {
+  color: var(--text-muted) !important;
+}
+
+/* --- Input --- */
+.el-input__wrapper {
+  background-color: var(--input-bg) !important;
+  box-shadow: 0 0 0 1px var(--input-border) inset !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--transition-fast) !important;
+}
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--text-muted) inset !important;
+}
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--input-focus-border) inset, var(--input-focus-shadow) !important;
+}
+.el-input__inner {
+  color: var(--input-text) !important;
+  font-family: var(--font-body) !important;
+}
+.el-input__inner::placeholder {
+  color: var(--input-placeholder) !important;
+}
+.el-input__prefix .el-icon,
+.el-input__suffix .el-icon {
+  color: var(--text-muted) !important;
+}
+
+/* --- Textarea --- */
+.el-textarea__inner {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--input-text) !important;
+  font-family: var(--font-body) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.el-textarea__inner:focus {
+  border-color: var(--input-focus-border) !important;
+  box-shadow: var(--input-focus-shadow) !important;
+}
+
+/* --- Select --- */
+.el-select .el-input__wrapper {
+  background-color: var(--input-bg) !important;
+}
+.el-select-dropdown {
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+.el-select-dropdown__item {
+  color: var(--text-primary) !important;
+  font-family: var(--font-body) !important;
+}
+.el-select-dropdown__item.hover,
+.el-select-dropdown__item:hover {
+  background-color: var(--bg-secondary) !important;
+}
+.el-select-dropdown__item.selected {
+  color: var(--color-primary) !important;
+  font-weight: 500;
+}
+
+/* --- Tag --- */
+.el-tag {
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-heading) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em;
+}
+.el-tag--danger {
+  background-color: var(--color-danger-light) !important;
+  border-color: var(--color-danger) !important;
+  color: var(--color-danger) !important;
+}
+.el-tag--warning {
+  background-color: var(--color-warning-light) !important;
+  border-color: var(--color-warning) !important;
+  color: var(--color-warning) !important;
+}
+.el-tag--success {
+  background-color: var(--color-success-light) !important;
+  border-color: var(--color-success) !important;
+  color: var(--color-success) !important;
+}
+.el-tag--info {
+  background-color: var(--color-info-light) !important;
+  border-color: var(--color-info) !important;
+  color: var(--color-info) !important;
+}
+
+/* --- Form --- */
+.el-form-item__label {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 500 !important;
+  font-size: 0.8125rem !important;
+}
+
+/* --- Pagination --- */
+.el-pagination {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-heading) !important;
+}
+.el-pagination button {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.el-pagination button:hover {
+  color: var(--color-primary) !important;
+}
+.el-pager li {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+.el-pager li:hover {
+  color: var(--color-primary) !important;
+}
+.el-pager li.is-active {
+  background-color: var(--color-primary) !important;
+  color: var(--color-primary-text) !important;
+}
+
+/* --- Dialog / Drawer --- */
+.el-dialog {
+  background-color: var(--card-bg) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-xl) !important;
+}
+.el-dialog__title {
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 600 !important;
+}
+.el-dialog__headerbtn .el-dialog__close {
+  color: var(--text-muted) !important;
+}
+.el-drawer {
+  background-color: var(--card-bg) !important;
+}
+.el-drawer__header {
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  margin-bottom: 0 !important;
+  padding: var(--space-lg) !important;
+}
+.el-drawer__body {
+  padding: var(--space-lg) !important;
+}
+
+/* --- Descriptions --- */
+.el-descriptions {
+  color: var(--text-primary) !important;
+}
+.el-descriptions__label {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 500 !important;
+  font-size: 0.8125rem !important;
+}
+.el-descriptions__content {
+  color: var(--text-primary) !important;
+}
+
+/* --- Empty --- */
+.el-empty__description p {
+  color: var(--text-muted) !important;
+  font-family: var(--font-body) !important;
+}
+
+/* --- Progress --- */
+.el-progress-bar__outer {
+  background-color: var(--bg-tertiary) !important;
+  border-radius: 100px !important;
+}
+.el-progress-bar__inner {
+  border-radius: 100px !important;
+}
+
+/* --- Message --- */
+.el-message {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* --- MessageBox --- */
+.el-message-box {
+  background-color: var(--card-bg) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-xl) !important;
+}
+.el-message-box__title {
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading) !important;
+}
+.el-message-box__message {
+  color: var(--text-secondary) !important;
+}
+
+/* --- Loading --- */
+.el-loading-mask {
+  background-color: rgba(20, 20, 19, 0.6) !important;
+  backdrop-filter: blur(4px);
+}
+.el-loading-spinner .el-loading-text {
+  color: var(--text-secondary) !important;
+}
+.el-loading-spinner .circular .path {
+  stroke: var(--color-primary) !important;
+}
+
+/* --- Tabs --- */
+.el-tabs__item {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 500 !important;
+}
+.el-tabs__item:hover {
+  color: var(--color-primary) !important;
+}
+.el-tabs__item.is-active {
+  color: var(--color-primary) !important;
+}
+.el-tabs__active-bar {
+  background-color: var(--color-primary) !important;
+}
+
+/* --- Tooltip --- */
+.el-tooltip__trigger {
+  outline: none;
+}
+
+/* --- Slider --- */
+.el-slider__runway {
+  background-color: var(--bg-tertiary) !important;
+}
+.el-slider__bar {
+  background-color: var(--color-primary) !important;
+}
+.el-slider__button {
+  border-color: var(--color-primary) !important;
+}
+
+/* --- Row / Col --- */
+.el-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* ============================================================
+   5. Utility Classes
+   ============================================================ */
+.text-brand {
+  color: var(--color-primary);
+}
+.text-muted {
+  color: var(--text-muted);
+}
+.font-heading {
+  font-family: var(--font-heading);
+}
+.font-body {
+  font-family: var(--font-body);
+}
+.font-mono {
+  font-family: var(--font-mono);
+}
