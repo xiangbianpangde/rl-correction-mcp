@@ -1,5 +1,8 @@
 <template>
   <div class="app" :class="{ dark: isDark }">
+    <!-- 粒子背景 -->
+    <ParticleBackground />
+
     <!-- 侧边栏 -->
     <aside class="sidebar">
       <header class="sidebar-header">
@@ -57,6 +60,7 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useThemeStore } from './stores/theme';
+import ParticleBackground from './components/ParticleBackground.vue';
 import {
   Tools,
   DataLine,
@@ -92,14 +96,14 @@ const goToAdd = () => {
 .app {
   display: flex;
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s;
+  transition: color 0.3s;
 }
 
 .sidebar {
   width: 240px;
-  background-color: var(--sidebar-bg);
+  background-color: rgba(255, 255, 255, 0.82);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
@@ -109,6 +113,8 @@ const goToAdd = () => {
   bottom: 0;
   z-index: 100;
   transition: background-color 0.3s, border-color 0.3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .sidebar-header {
@@ -198,8 +204,12 @@ const goToAdd = () => {
   flex: 1;
   margin-left: 240px;
   padding: 32px;
-  background-color: var(--bg-primary);
+  background-color: rgba(250, 249, 245, 0.75);
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 /* 响应式 */

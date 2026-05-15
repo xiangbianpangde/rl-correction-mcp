@@ -199,6 +199,19 @@ body {
   transition: background-color var(--transition-base), color var(--transition-base);
 }
 
+/* 让 app 容器不遮挡粒子背景 */
+.app {
+  background-color: transparent !important;
+}
+
+/* 暗黑模式下侧边栏和主区域半透明 */
+html.dark .sidebar {
+  background-color: rgba(20, 20, 19, 0.85) !important;
+}
+html.dark .main {
+  background-color: rgba(20, 20, 19, 0.75) !important;
+}
+
 /* --- Headings use Poppins --- */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
