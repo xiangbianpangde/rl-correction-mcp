@@ -33,6 +33,7 @@ from rl_correction_mcp.models import (
     PriorityLevel,
     ReviewStatus,
     SearchInput,
+    AdvancedSearchFilters,
     ReviewRecordToolInput,
     UpdateLogicChainToolInput,
 )
@@ -73,6 +74,7 @@ class DeleteRequest(BaseModel):
 class SearchRequest(BaseModel):
     query: str
     top_k: int = Field(default=5, ge=1, le=20)
+    filters: Optional[AdvancedSearchFilters] = None
     filter_type: Optional[str] = None
     filter_tags: Optional[list[str]] = None
     filter_priority: Optional[str] = None
@@ -381,9 +383,11 @@ async def search_records(data: SearchRequest):
         from rl_correction_mcp.retriever import CorrectionRetriever
 
         retriever = CorrectionRetriever(store)
+        
         params = SearchInput(
             query=data.query,
             top_k=data.top_k,
+            filters=data.filters,
             filter_type=data.filter_type,
             filter_tags=data.filter_tags,
             filter_priority=data.filter_priority,
@@ -407,6 +411,38 @@ async def search_records(data: SearchRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"搜索失败: {str(e)}")
+
+
+@app.get("/api/search/filters")
+async def get_search_filters():
+    """获取可用的搜索过滤器"""
+    if store is None:
+        raise HTTPException(status_code=500, detail="存储层未初始化")
+
+    try:
+        from rl_correction_mcp.retriever import CorrectionRetriever
+
+        retriever = CorrectionRetriever(store)
+        filters = retriever.get_available_filters()
+
+        return {
+            "filters": [
+                {
+                    "name": f.name,
+                    "label": f.label,
+                    "type": f.type,
+                    "options": [
+                        {"value": o.value, "label": o.label, "count": o.count}
+                        for o in (f.options or [])
+                    ] if f.options else None,
+                    "min": f.min,
+                    "max": f.max,
+                }
+                for f in filters
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"获取过滤器失败: {str(e)}")
 
 
 # ============================================================

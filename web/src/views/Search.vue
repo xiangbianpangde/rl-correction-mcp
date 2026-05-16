@@ -1,7 +1,9 @@
 <template>
   <div class="search-page">
-    <h2>RAG 搜索</h2>
-    <p class="description">基于向量相似度搜索修正记录</p>
+    <div class="title-section">
+      <h2>RAG 搜索</h2>
+      <p class="description">基于向量相似度搜索修正记录</p>
+    </div>
 
     <el-card class="search-card">
       <el-form :model="searchForm" label-position="top">
@@ -46,46 +48,110 @@
       </p>
     </el-card>
 
-    <el-card v-if="results.length" class="results-card">
-      <template #header>
-        <span>搜索结果 ({{ results.length }} 条)</span>
-      </template>
-      <div
-        v-for="(result, index) in results"
-        :key="index"
-        class="result-item"
-        role="article"
-        :aria-label="`搜索结果 ${index + 1}: ${getResultTitle(result)}`"
-      >
-        <div class="result-header">
-          <el-tag :type="result.type === 'correction_pair' ? 'warning' : 'success'">
-            {{ result.type === 'correction_pair' ? '修正对' : '行为规则' }}
-          </el-tag>
-          <span class="similarity" aria-label="相似度">
-            相似度: {{ (result.similarity * 100).toFixed(1) }}%
-          </span>
-        </div>
-        <div class="result-content">
-          <p><strong>触发条件:</strong> {{ result.metadata?.trigger_condition || result.metadata?.extracted_context || '-' }}</p>
-          <p><strong>内容:</strong> {{ result.content?.substring(0, 200) }}{{ result.content?.length > 200 ? '...' : '' }}</p>
-        </div>
-      </div>
-    </el-card>
+    <!-- 高级过滤器 -->
+    <DynamicFilterPanel v-model="advancedFilters" />
 
-    <el-empty v-else-if="searched" description="未找到相关结果" />
+    <!-- 搜索结果 -->
+    <el-card v-if="searchResults.length > 0" class="results-card">
+      <template #header>
+        <span>搜索结果 ({{ totalResults }} 条)</span>
+      </template>
+
+      <el-table
+        :data="searchResults"
+        style="width: 100%"
+        @row-click="handleRowClick"
+      >
+        <el-table-column type="expand">
+          <template #default="{ row }">
+            <div class="expand-content">
+              <el-descriptions :column="1" border>
+                <el-descriptions-item label="场景描述">
+                  {{ row.metadata?.scenario || row.metadata?.extracted_context || '-' }}
+                </el-descriptions-item>
+                <el-descriptions-item label="错误输出">
+                  <span class="wrong-text">{{ row.metadata?.wrong_output || '-' }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item label="正确输出">
+                  <span class="correct-text">{{ row.metadata?.correct_output || '-' }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item v-if="row.metadata?.chain_of_thought" label="错误逻辑链">
+                  <span class="wrong-text">{{ row.metadata.chain_of_thought }}</span>
+                </el-descriptions-item>
+                <el-descriptions-item v-if="row.metadata?.correct_chain_of_thought" label="正确逻辑链">
+                  <span class="correct-text">{{ row.metadata.correct_chain_of_thought }}</span>
+                </el-descriptions-item>
+              </el-descriptions>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="similarity" label="相似度" width="100">
+          <template #default="{ row }">
+            <el-tag :type="getSimilarityType(row.similarity)">
+              {{ (row.similarity * 100).toFixed(1) }}%
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="type" label="类型" width="100">
+          <template #default="{ row }">
+            <el-tag size="small">
+              {{ row.type === 'correction_pair' ? '修正对' : '行为规则' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="标签" width="200">
+          <template #default="{ row }">
+            <el-tag
+              v-for="tag in parseTags(row.metadata?.tags)"
+              :key="tag"
+              size="small"
+              style="margin-right: 4px"
+            >
+              {{ tag }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="metadata.priority" label="优先级" width="80">
+          <template #default="{ row }">
+            <el-tag
+              :type="getPriorityType(row.metadata?.priority)"
+              size="small"
+            >
+              {{ row.metadata?.priority || 'P1' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="预览">
+          <template #default="{ row }">
+            <div class="preview-text">
+              {{ row.content?.substring(0, 100) }}...
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
+import axios from 'axios';
 import { useCorrectionsStore } from '../stores/corrections';
+import DynamicFilterPanel from '../components/DynamicFilterPanel.vue'
 
 const store = useCorrectionsStore();
 
 const loading = ref(false);
 const searched = ref(false);
 const results = ref([]);
+const searchResults = ref([]);
+const totalResults = ref(0);
 const searchInput = ref(null);
 
 const searchForm = reactive({
@@ -94,9 +160,37 @@ const searchForm = reactive({
   type: null,
 });
 
+const advancedFilters = ref({})
+
 const getResultTitle = (result) => {
   return result.metadata?.trigger_condition || result.metadata?.extracted_context || '未知';
 };
+
+const getSimilarityType = (similarity) => {
+  if (similarity >= 0.8) return 'success'
+  if (similarity >= 0.6) return 'warning'
+  return 'info'
+}
+
+const parseTags = (tags) => {
+  if (!tags) return []
+  if (Array.isArray(tags)) return tags
+  return tags.split(',').filter(t => t)
+}
+
+const getPriorityType = (priority) => {
+  const priorityMap = {
+    'P0': 'danger',
+    'P1': 'warning',
+    'P2': 'info',
+    'P3': 'info'
+  }
+  return priorityMap[priority] || 'info'
+}
+
+const handleRowClick = (row) => {
+  console.log('Clicked row:', row.id)
+}
 
 const focusSearch = () => {
   searchInput.value?.focus();
@@ -104,28 +198,26 @@ const focusSearch = () => {
 
 const handleSearch = async () => {
   if (!searchForm.query.trim()) {
-    ElMessage.warning('请输入搜索内容');
-    return;
+    ElMessage.warning('请输入搜索关键词')
+    return
   }
 
-  loading.value = true;
-  searched.value = false;
-  results.value = [];
+  loading.value = true
   try {
-    const data = await store.search(searchForm.query, searchForm.topK, searchForm.type);
-    results.value = data.results || [];
-    searched.value = true;
-    if (results.value.length === 0) {
-      ElMessage.info('未找到相关结果，请尝试其他关键词');
-    }
+    const response = await axios.post('/api/search', {
+      query: searchForm.query,
+      top_k: searchForm.topK,
+      filters: Object.keys(advancedFilters.value).length > 0 ? advancedFilters.value : null
+    })
+    
+    searchResults.value = response.data.results
+    totalResults.value = response.data.total
   } catch (error) {
-    console.error('Search failed:', error);
-    ElMessage.error(error.message || '搜索失败，请稍后重试');
-    searched.value = true;
+    ElMessage.error('搜索失败: ' + (error.response?.data?.detail || error.message))
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 // 全局键盘快捷键
 const handleGlobalKeydown = (e) => {
@@ -149,11 +241,18 @@ onUnmounted(() => {
 <style scoped>
 .search-page {
   max-width: 800px;
+  margin: 0 auto;
+}
+
+.title-section {
+  text-align: center;
+  margin-bottom: 24px;
 }
 
 .description {
   color: var(--text-secondary);
   margin-bottom: 24px;
+  text-align: center;
 }
 
 .search-card {
@@ -210,5 +309,27 @@ onUnmounted(() => {
 
 .result-content strong {
   color: var(--text-primary);
+}
+
+.results-card {
+  margin-top: 16px;
+}
+
+.expand-content {
+  padding: 16px;
+  background: var(--el-fill-color-light);
+}
+
+.wrong-text {
+  color: var(--el-color-danger);
+}
+
+.correct-text {
+  color: var(--el-color-success);
+}
+
+.preview-text {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
 }
 </style>

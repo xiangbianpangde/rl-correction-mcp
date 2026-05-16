@@ -36,6 +36,8 @@ env/
 data/chroma_db/
 data/calls.db
 *.sqlite3
+data/calls_backup_*.db
+data/chroma_db_backup_*/
 
 # Node.js
 node_modules/

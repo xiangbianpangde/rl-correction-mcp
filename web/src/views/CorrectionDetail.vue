@@ -21,19 +21,24 @@
           <el-descriptions-item label="更新时间">
             {{ formatDate(record.updated_at) }}
           </el-descriptions-item>
-          <el-descriptions-item label="优先级">
-            <el-tag :type="getPriorityType(record.metadata?.priority)">
-              {{ record.metadata?.priority || 'P1' }}
+          <el-descriptions-item v-if="record.metadata?.priority" label="优先级">
+            <el-tag :type="getPriorityType(record.metadata.priority)">
+              {{ record.metadata.priority || 'P1' }}
             </el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="质量评分">
+          <el-descriptions-item v-if="record.output_chain?.quality_score" label="质量评分">
             <el-progress
-              :percentage="record.output_chain?.quality_score || 0"
+              :percentage="record.output_chain.quality_score || 0"
               :color="getScoreColor"
             />
           </el-descriptions-item>
-          <el-descriptions-item v-if="record.tags?.length" label="标签">
-            <el-tag v-for="tag in record.tags" :key="tag" size="small" style="margin-right: 4px">
+          <el-descriptions-item v-if="record.tags?.length || record.metadata?.tags?.length" label="标签">
+            <el-tag
+              v-for="tag in (record.tags || record.metadata?.tags || [])"
+              :key="tag"
+              size="small"
+              style="margin-right: 4px"
+            >
               {{ tag }}
             </el-tag>
           </el-descriptions-item>
@@ -46,7 +51,7 @@
           <span>🎯 场景描述</span>
         </template>
         <div class="content-box">
-          {{ record.input_chain?.raw_input || '-' }}
+          {{ record.input_chain?.raw_input || record.scenario || '-' }}
         </div>
       </el-card>
 
@@ -66,11 +71,11 @@
           <span class="wrong-header">❌ 错误输出</span>
         </template>
         <div class="content-box wrong-content">
-          {{ record.output_chain?.wrong_output || '-' }}
+          {{ record.output_chain?.wrong_output || record.wrong_output || '-' }}
         </div>
-        <div v-if="record.output_chain?.wrong_reason" class="reason-box">
+        <div v-if="record.output_chain?.wrong_reason || record.reason" class="reason-box">
           <div class="reason-label">错误原因：</div>
-          <div class="reason-content">{{ record.output_chain.wrong_reason }}</div>
+          <div class="reason-content">{{ record.output_chain?.wrong_reason || record.reason }}</div>
         </div>
       </el-card>
 
@@ -80,11 +85,31 @@
           <span class="correct-header">✅ 正确输出</span>
         </template>
         <div class="content-box correct-content">
-          {{ record.output_chain?.correct_output || '-' }}
+          {{ record.output_chain?.correct_output || record.correct_output || '-' }}
         </div>
         <div v-if="record.output_chain?.correct_reason" class="reason-box">
           <div class="reason-label">正确原因：</div>
           <div class="reason-content">{{ record.output_chain.correct_reason }}</div>
+        </div>
+      </el-card>
+
+      <!-- 错误逻辑链 -->
+      <el-card v-if="record.metadata?.chain_of_thought || record.logic_chain?.wrong_cot || record.chain_of_thought" class="detail-card">
+        <template #header>
+          <span class="wrong-header">⚠️ 错误逻辑链</span>
+        </template>
+        <div class="content-box wrong-content">
+          {{ record.metadata?.chain_of_thought || record.logic_chain?.wrong_cot || record.chain_of_thought || '-' }}
+        </div>
+      </el-card>
+
+      <!-- 正确逻辑链 -->
+      <el-card v-if="record.metadata?.correct_chain_of_thought || record.logic_chain?.correct_cot || record.correct_chain_of_thought" class="detail-card">
+        <template #header>
+          <span class="correct-header">💡 正确逻辑链</span>
+        </template>
+        <div class="content-box correct-content">
+          {{ record.metadata?.correct_chain_of_thought || record.logic_chain?.correct_cot || record.correct_chain_of_thought || '-' }}
         </div>
       </el-card>
 

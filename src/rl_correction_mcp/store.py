@@ -13,6 +13,7 @@ import chromadb.utils.embedding_functions as embedding_functions
 
 from .config import Config
 from .models import (
+    AdvancedSearchFilters,
     BehaviorRuleRecord,
     CorrectionType,
     GetRecordToolInput,
@@ -60,11 +61,18 @@ class TripleChainStore:
         )
 
         # 主向量库
-        self._collection = self._client.get_or_create_collection(
-            name=collection_name,
-            embedding_function=self._embedding_fn,
-            metadata={"hnsw:space": "cosine"},
-        )
+        try:
+            # 先尝试获取已存在的 collection（不传递 embedding 函数以避免冲突）
+            self._collection = self._client.get_collection(
+                name=collection_name
+            )
+        except Exception:
+            # 如果不存在，创建时使用当前的 embedding 函数
+            self._collection = self._client.get_or_create_collection(
+                name=collection_name,
+                embedding_function=self._embedding_fn,
+                metadata={"hnsw:space": "cosine"},
+            )
 
         logger.info(
             f"TripleChainStore 初始化完成: "
@@ -92,11 +100,11 @@ class TripleChainStore:
 
         # 降级到本地 SentenceTransformer
         try:
-            # 使用轻量级多语言模型
+            # 使用配置中指定的模型
             fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-                model_name="paraphrase-MiniLM-L3-v2"
+                model_name=embedding_model
             )
-            logger.info("使用本地 SentenceTransformer Embedding (paraphrase-MiniLM-L3-v2)")
+            logger.info(f"使用本地 SentenceTransformer Embedding ({embedding_model})")
             return fn
         except Exception as e:
             logger.error(f"本地 Embedding 模型初始化失败: {e}")
@@ -107,16 +115,67 @@ class TripleChainStore:
     def collection(self):
         return self._collection
 
+    def _apply_advanced_filters(
+        self,
+        records: list[dict],
+        filters: AdvancedSearchFilters,
+    ) -> list[dict]:
+        """应用高级过滤条件（在内存中过滤）"""
+        filtered = records
+
+        if filters.tags:
+            filtered = [
+                r for r in filtered
+                if all(tag in r.get("metadata", {}).get("tags", "").split(",") for tag in filters.tags)
+            ]
+
+        if filters.tags_any:
+            filtered = [
+                r for r in filtered
+                if any(tag in r.get("metadata", {}).get("tags", "").split(",") for tag in filters.tags_any)
+            ]
+
+        if filters.quality_score_min is not None:
+            filtered = [
+                r for r in filtered
+                if r.get("metadata", {}).get("quality_score", 0) >= filters.quality_score_min
+            ]
+        if filters.quality_score_max is not None:
+            filtered = [
+                r for r in filtered
+                if r.get("metadata", {}).get("quality_score", 0) <= filters.quality_score_max
+            ]
+
+        if filters.created_after:
+            filtered = [
+                r for r in filtered
+                if r.get("metadata", {}).get("created_at", "") >= filters.created_after
+            ]
+        if filters.created_before:
+            filtered = [
+                r for r in filtered
+                if r.get("metadata", {}).get("created_at", "") <= filters.created_before
+            ]
+
+        return filtered
+
     # ============================================================
     # JSON 存储（完整数据精确读取）
     # ============================================================
 
     def _ensure_json_collection(self):
         if not hasattr(self, "_json_collection"):
-            self._json_collection = self._client.get_or_create_collection(
-                name=f"{Config.COLLECTION_NAME}_json",
-                embedding_function=self._embedding_fn,
-            )
+            try:
+                # 先尝试获取已存在的 collection（不传递 embedding 函数以避免冲突）
+                self._json_collection = self._client.get_collection(
+                    name=f"{Config.COLLECTION_NAME}_json"
+                )
+            except Exception:
+                # 如果不存在，创建时使用当前的 embedding 函数
+                self._json_collection = self._client.get_or_create_collection(
+                    name=f"{Config.COLLECTION_NAME}_json",
+                    embedding_function=self._embedding_fn,
+                )
 
     # ============================================================
     # 增
@@ -189,12 +248,64 @@ class TripleChainStore:
         """通过 ID 获取完整记录"""
         self._ensure_json_collection()
         try:
+            # 先尝试从 JSON 集合获取（新格式）
             result = self._json_collection.get(
                 ids=[f"json_{record_id}"],
                 include=["documents", "metadatas"],
             )
             if result["documents"]:
                 return json.loads(result["documents"][0])
+            
+            # 如果没有 JSON 记录，从主向量库构建旧格式记录
+            main_result = self._collection.get(
+                ids=[record_id],
+                include=["metadatas", "documents"],
+            )
+            if main_result["metadatas"] and main_result["documents"]:
+                meta = main_result["metadatas"][0]
+                doc = main_result["documents"][0]
+                
+                # 从 document 里解析数据
+                wrong_output = ""
+                correct_output = ""
+                wrong_reason = ""
+                wrong_cot = meta.get("chain_of_thought", "")
+                correct_cot = meta.get("correct_chain_of_thought", "")
+                
+                lines = doc.split("\n")
+                for line in lines:
+                    if line.startswith("错误输出:"):
+                        wrong_output = line[len("错误输出:"):].strip()
+                    elif line.startswith("正确输出:"):
+                        correct_output = line[len("正确输出:"):].strip()
+                    elif line.startswith("原因:"):
+                        wrong_reason = line[len("原因:"):].strip()
+                
+                # 构建兼容旧数据的记录结构
+                record = {
+                    "id": record_id,
+                    "type": meta.get("type", "correction_pair"),
+                    "created_at": meta.get("created_at", ""),
+                    "metadata": meta,
+                    "input_chain": {
+                        "raw_input": meta.get("scenario", ""),
+                        "extracted_context": meta.get("extracted_context", meta.get("scenario", "")),
+                    },
+                    "output_chain": {
+                        "wrong_output": wrong_output,
+                        "correct_output": correct_output,
+                        "quality_score": meta.get("quality_score", 50),
+                        "wrong_reason": wrong_reason,
+                    },
+                    "logic_chain": {
+                        "wrong_reason": wrong_reason,
+                        "correct_reason": None,
+                        "wrong_cot": wrong_cot,
+                        "correct_cot": correct_cot,
+                        "alternative_approaches": None,
+                    },
+                }
+                return record
         except Exception as e:
             logger.error(f"获取记录失败: id={record_id}, error={e}")
         return None
@@ -206,6 +317,7 @@ class TripleChainStore:
         filter_type: Optional[str] = None,
         filter_priority: Optional[str] = None,
         filter_review_status: Optional[str] = None,
+        filters: Optional[AdvancedSearchFilters] = None,
     ) -> dict:
         """列出所有记录（分页 + 多维过滤）"""
         where_clauses = []
@@ -216,6 +328,14 @@ class TripleChainStore:
             where_clauses.append({"priority": filter_priority})
         if filter_review_status:
             where_clauses.append({"review_status": filter_review_status})
+
+        if filters:
+            if filters.type:
+                where_clauses.append({"type": filters.type})
+            if filters.priority:
+                where_clauses.append({"priority": {"$in": filters.priority}})
+            if filters.review_status:
+                where_clauses.append({"review_status": filters.review_status})
 
         # 只有一个条件时直接使用，多个条件时使用 $and
         if len(where_clauses) == 1:
@@ -269,6 +389,9 @@ class TripleChainStore:
                 "title": title,
                 "preview": documents[i][:200] + "..." if len(documents[i]) > 200 else documents[i],
             })
+
+        if filters:
+            records = self._apply_advanced_filters(records, filters)
 
         return {
             "total": total,
@@ -427,7 +550,7 @@ class TripleChainStore:
     # ============================================================
 
     def search(self, params: SearchInput) -> list:
-        """向量相似度搜索"""
+        """向量相似度搜索（如果嵌入维度不匹配则回退到关键词搜索）"""
         where_clauses = []
 
         if params.filter_type:
@@ -446,24 +569,66 @@ class TripleChainStore:
         else:
             where = None
 
-        results = self._collection.query(
-            query_texts=[params.query],
-            n_results=params.top_k,
+        try:
+            # 尝试向量搜索
+            results = self._collection.query(
+                query_texts=[params.query],
+                n_results=params.top_k,
+                where=where,
+                include=["documents", "metadatas", "distances"],
+            )
+
+            search_results = []
+            if results["ids"] and results["ids"][0]:
+                for i in range(len(results["ids"][0])):
+                    meta = results["metadatas"][0][i]
+                    record_type = CorrectionType(meta.get("type", "correction_pair"))
+                    search_results.append({
+                        "id": results["ids"][0][i],
+                        "type": record_type,
+                        "content": results["documents"][0][i],
+                        "metadata": meta,
+                        "distance": results["distances"][0][i],
+                    })
+
+            return search_results
+        except Exception as e:
+            # 如果向量搜索失败（如嵌入维度不匹配），回退到关键词搜索
+            logger.warning(f"向量搜索失败，回退到关键词搜索: {e}")
+            return self._keyword_search(params, where)
+
+    def _keyword_search(self, params: SearchInput, where=None) -> list:
+        """基于关键词的搜索（回退方案）"""
+        query_lower = params.query.lower()
+        
+        # 获取所有记录
+        results = self._collection.get(
             where=where,
-            include=["documents", "metadatas", "distances"],
+            include=["documents", "metadatas"],
         )
 
         search_results = []
-        if results["ids"] and results["ids"][0]:
-            for i in range(len(results["ids"][0])):
-                meta = results["metadatas"][0][i]
+        for i, doc in enumerate(results["documents"]):
+            doc_lower = doc.lower()
+            meta = results["metadatas"][i]
+            
+            # 简单的关键词匹配评分
+            score = 0
+            if query_lower in doc_lower:
+                score = 1.0 - (doc_lower.count(query_lower) * 0.1)
+            
+            if score > 0 or not params.query:
                 record_type = CorrectionType(meta.get("type", "correction_pair"))
                 search_results.append({
-                    "id": results["ids"][0][i],
+                    "id": results["ids"][i],
                     "type": record_type,
-                    "content": results["documents"][0][i],
+                    "content": doc,
                     "metadata": meta,
-                    "distance": results["distances"][0][i],
+                    "distance": 1.0 - score,  # 将评分转换为距离（越小越相似）
                 })
 
-        return search_results
+        # 按距离排序
+        search_results.sort(key=lambda x: x["distance"])
+        
+        # 返回 top_k 条结果
+        return search_results[:params.top_k]

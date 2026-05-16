@@ -110,6 +110,7 @@ onMounted(() => {
 .stat-card {
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 20px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -129,6 +130,7 @@ onMounted(() => {
   justify-content: center;
   margin-right: 16px;
   color: var(--color-info);
+  flex-shrink: 0;
 }
 
 .stat-icon.correction {
@@ -139,6 +141,11 @@ onMounted(() => {
 .stat-icon.rule {
   background: var(--color-success-light);
   color: var(--color-success);
+}
+
+.stat-content {
+  flex: 1;
+  text-align: center;
 }
 
 .stat-value {
@@ -154,6 +161,7 @@ onMounted(() => {
   font-family: var(--font-heading);
   color: var(--text-secondary);
   margin-top: 4px;
+  text-align: center;
 }
 
 .charts-row {

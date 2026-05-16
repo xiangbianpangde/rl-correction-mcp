@@ -47,14 +47,16 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="120" fixed="right" align="center">
         <template #default="{ row }">
-          <el-button type="primary" size="small" @click.stop="handleEdit(row)">
-            编辑
-          </el-button>
-          <el-button type="danger" size="small" @click.stop="handleDelete(row)">
-            删除
-          </el-button>
+          <div class="action-buttons">
+            <el-button type="primary" size="small" @click.stop="handleEdit(row)">
+              编辑
+            </el-button>
+            <el-button type="danger" size="small" @click.stop="handleDelete(row)">
+              删除
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -192,6 +194,12 @@ onMounted(() => {
 .pagination {
   margin-top: 24px;
   display: flex;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
   justify-content: center;
 }
 </style>

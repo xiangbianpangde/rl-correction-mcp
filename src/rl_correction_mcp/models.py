@@ -384,6 +384,71 @@ class SearchResult(BaseModel):
             )
 
 
+class AdvancedSearchFilters(BaseModel):
+    """高级搜索过滤条件"""
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    tags: Optional[list[str]] = Field(
+        default=None,
+        description="标签过滤（AND 关系，必须同时包含所有标签）",
+    )
+    tags_any: Optional[list[str]] = Field(
+        default=None,
+        description="标签过滤（OR 关系，包含任一标签即可）",
+    )
+    priority: Optional[list[str]] = Field(
+        default=None,
+        description="优先级过滤：P0 / P1 / P2",
+    )
+    quality_score_min: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="最低质量评分",
+    )
+    quality_score_max: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="最高质量评分",
+    )
+    review_status: Optional[str] = Field(
+        default=None,
+        description="审核状态：pending / approved / rejected",
+        pattern=r"^(pending|approved|rejected)?$",
+    )
+    created_after: Optional[str] = Field(
+        default=None,
+        description="创建时间起始（ISO 格式）",
+    )
+    created_before: Optional[str] = Field(
+        default=None,
+        description="创建时间结束（ISO 格式）",
+    )
+    type: Optional[str] = Field(
+        default=None,
+        description="记录类型：correction_pair / behavior_rule",
+        pattern=r"^(correction_pair|behavior_rule)?$",
+    )
+
+
+class FilterOption(BaseModel):
+    """过滤选项"""
+    value: str
+    label: str
+    count: Optional[int] = None
+
+
+class FilterDefinition(BaseModel):
+    """过滤器定义"""
+    name: str
+    label: str
+    type: str  # multiselect, range, select
+    options: Optional[list[FilterOption]] = None
+    min: Optional[int] = None
+    max: Optional[int] = None
+
+
 class SearchInput(BaseModel):
     """RAG 检索的输入模型"""
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -410,6 +475,10 @@ class SearchInput(BaseModel):
         default=None,
         description="按优先级过滤：P0 / P1 / P2",
         pattern=r"^(P0|P1|P2)?$",
+    )
+    filters: Optional[AdvancedSearchFilters] = Field(
+        default=None,
+        description="高级过滤条件",
     )
 
 
